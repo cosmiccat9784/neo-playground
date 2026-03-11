@@ -138,7 +138,8 @@ gameForm.addEventListener("submit", async (event) => {
   });
 
   if (!response.ok) {
-    setStatus("Publish failed.");
+    const errorText = await response.text();
+    setStatus(`Publish failed: ${errorText}`);
     return;
   }
 
