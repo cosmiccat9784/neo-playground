@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orbit Runner • Neo Games</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/logo.png" alt="Neo Games logo" />
+          <div>
+            <p class="brand-name">Neo Games</p>
+            <p class="brand-sub">Playground</p>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Discover</a>
+          <a href="new.html">New</a>
+          <a href="multiplayer.html">Multiplayer</a>
+          <a href="index.html#top-rated">Top Rated</a>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <main class="main">
+          <section class="player">
+            <div class="player-header">
+              <div>
+                <h2>Orbit Runner</h2>
+                <p>Arcade / Single Player / Keyboard</p>
+              </div>
+            </div>
+            <div class="player-frame">
+              <canvas id="game" width="820" height="460"></canvas>
+              <div class="game-ui">
+                <div class="ui-row">
+                  <span class="ui-label">Health</span>
+                  <strong id="health">5</strong>
+                </div>
+                <div class="ui-row">
+                  <span class="ui-label">Score</span>
+                  <strong id="score">0</strong>
+                </div>
+                <div class="ui-row">
+                  <span class="ui-label">Time</span>
+                  <strong id="time">0.0s</strong>
+                </div>
+              </div>
+              <div class="game-controls">
+                <button id="reset-btn" type="button">Reset</button>
+                <button id="pause-btn" type="button">Pause</button>
+              </div>
+              <div id="start-overlay" class="start-overlay">
+                <div class="overlay-card">
+                  <h3 id="overlay-title">Ready to launch?</h3>
+                  <p id="overlay-subtitle">Game script ready.</p>
+                  <button id="start-btn" type="button">Start Game</button>
+                </div>
+              </div>
+            </div>
+            <div class="player-status">
+              <span>Status</span>
+              <strong id="state">Ready</strong>
+              <span class="status-hint">Arrow keys move. Space boosts.</span>
+              <button id="leaderboard-btn" type="button">Leaderboard</button>
+            </div>
+            <div class="rating-panel">
+              <div>
+                <h3>Rate this game</h3>
+                <p class="rating-meta">
+                  <span id="rating-average">--</span>
+                  <span class="rating-sep">•</span>
+                  <span id="rating-count">Ratings offline</span>
+                </p>
+              </div>
+              <form id="rating-form" class="rating-form">
+                <div id="rating-stars" class="rating-stars" aria-label="Game rating">
+                  <button type="button" data-rating="1" aria-label="1 star">★</button>
+                  <button type="button" data-rating="2" aria-label="2 stars">★</button>
+                  <button type="button" data-rating="3" aria-label="3 stars">★</button>
+                  <button type="button" data-rating="4" aria-label="4 stars">★</button>
+                  <button type="button" data-rating="5" aria-label="5 stars">★</button>
+                </div>
+                <button id="rating-submit" type="submit" disabled>Submit Rating</button>
+              </form>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <div id="leaderboard-modal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Leaderboard</h3>
+            <button id="leaderboard-close" type="button">Close</button>
+          </div>
+          <p id="leaderboard-message" class="modal-message">Leaderboard offline in standalone mode.</p>
+          <form id="leaderboard-form" class="leaderboard-form">
+            <input id="leaderboard-name" type="text" maxlength="20" placeholder="Your name" />
+            <input id="leaderboard-score" type="text" readonly />
+            <button type="submit">Submit Score</button>
+          </form>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <p>Neo Games Lab • Built for fast browser play.</p>
+        <div class="links">
+          <a href="index.html">About</a>
+          <a href="new.html">Developers</a>
+          <a href="multiplayer.html">Support</a>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      window.NeoDB = { enabled: false };
+      window.NeoStore = window.NeoStore || null;
+    </script>
+    <script>
+      const getEls = () => ({
+        canvas: document.getElementById("game"),
+        scoreEl: document.getElementById("score"),
+        timeEl: document.getElementById("time"),
+        stateEl: document.getElementById("state"),
+        healthEl: document.getElementById("health"),
+        startBtn: document.getElementById("start-btn"),
+        startOverlay: document.getElementById("start-overlay"),
+        overlayTitle: document.getElementById("overlay-title"),
+        overlaySubtitle: document.getElementById("overlay-subtitle"),
+        resetBtn: document.getElementById("reset-btn"),
+        pauseBtn: document.getElementById("pause-btn"),
+        leaderboardBtn: document.getElementById("leaderboard-btn"),
+        leaderboardModal: document.getElementById("leaderboard-modal"),
+        leaderboardClose: document.getElementById("leaderboard-close"),
+        leaderboardForm: document.getElementById("leaderboard-form"),
+        leaderboardName: document.getElementById("leaderboard-name"),
+        leaderboardScore: document.getElementById("leaderboard-score"),
+        leaderboardList: document.getElementById("leaderboard-list"),
+        leaderboardMessage: document.getElementById("leaderboard-message"),
+        ratingForm: document.getElementById("rating-form"),
+        ratingStars: document.getElementById("rating-stars"),
+        ratingSubmit: document.getElementById("rating-submit"),
+        ratingAverage: document.getElementById("rating-average"),
+        ratingCount: document.getElementById("rating-count"),
+      });
+
+      const state = {
+        player: { x: 120, y: 210, r: 18, vx: 0, vy: 0 },
+        stars: [],
+        asteroids: [],
+        keys: new Set(),
+        score: 0,
+        time: 0,
+        paused: false,
+        running: false,
+        health: 5,
+        hitCooldown: 0,
+        highScore: 0,
+        pendingScore: null,
+        saveTimer: 0,
+        hasProgress: false,
+        lastFrame: performance.now(),
+        started: false,
+      };
+
+      const initElements = () => {
+        const els = getEls();
+        if (!els.canvas) {
+          return false;
+        }
+        state.canvas = els.canvas;
+        state.ctx = els.canvas.getContext("2d");
+        Object.assign(state, els);
+        return true;
+      };
+
+      const STAR_COUNT = 18;
+      const SPEED = 220;
+      const ASTEROID_COUNT = 8;
+      const MAX_HEALTH = 5;
+
+      const createStar = () => ({
+        x: Math.random() * state.canvas.width,
+        y: Math.random() * state.canvas.height,
+        r: 4 + Math.random() * 6,
+        drift: 30 + Math.random() * 60,
+      });
+
+      const createAsteroid = (offset = 0) => ({
+        x: state.canvas.width + Math.random() * 300 + offset,
+        y: Math.random() * (state.canvas.height - 40) + 20,
+        r: 12 + Math.random() * 18,
+        speed: 160 + Math.random() * 140,
+        drift: (Math.random() - 0.5) * 40,
+        spin: (Math.random() - 0.5) * 4,
+        angle: Math.random() * Math.PI * 2,
+      });
+
+      const setOverlay = (title, subtitle, buttonText) => {
+        state.overlayTitle.textContent = title;
+        state.overlaySubtitle.textContent = subtitle;
+        state.startBtn.textContent = buttonText;
+      };
+
+      const resetGame = () => {
+        state.player.x = state.canvas.width / 4;
+        state.player.y = state.canvas.height / 2;
+        state.player.vx = 0;
+        state.player.vy = 0;
+        state.score = 0;
+        state.time = 0;
+        state.paused = false;
+        state.running = false;
+        state.health = MAX_HEALTH;
+        state.hitCooldown = 0;
+        state.saveTimer = 0;
+        state.hasProgress = false;
+        state.lastFrame = performance.now();
+        state.stars = Array.from({ length: STAR_COUNT }, createStar);
+        state.asteroids = Array.from({ length: ASTEROID_COUNT }, (_, i) => createAsteroid(i * 120));
+        updateHud();
+        state.pauseBtn.textContent = "Pause";
+        setOverlay("Ready to launch?", "Dodge the asteroids and survive.", "Start Game");
+        state.stateEl.textContent = "Ready";
+        state.startOverlay.classList.remove("hidden");
+        if (state.leaderboardScore) {
+          state.leaderboardScore.value = "";
+        }
+      };
+
+      const updateHud = () => {
+        state.scoreEl.textContent = state.score.toString();
+        state.timeEl.textContent = `${state.time.toFixed(1)}s`;
+        state.healthEl.textContent = state.health.toString();
+      };
+
+      const handleInput = (dt) => {
+        const { player } = state;
+        const inputX = (state.keys.has("ArrowRight") ? 1 : 0) + (state.keys.has("ArrowLeft") ? -1 : 0);
+        const inputY = (state.keys.has("ArrowDown") ? 1 : 0) + (state.keys.has("ArrowUp") ? -1 : 0);
+
+        player.vx = inputX * SPEED;
+        player.vy = inputY * SPEED;
+
+        if (state.keys.has(" ")) {
+          player.vx *= 1.6;
+          player.vy *= 1.6;
+        }
+
+        player.x = Math.max(player.r, Math.min(state.canvas.width - player.r, player.x + player.vx * dt));
+        player.y = Math.max(player.r, Math.min(state.canvas.height - player.r, player.y + player.vy * dt));
+      };
+
+      const updateStars = (dt) => {
+        state.stars.forEach((star) => {
+          star.y += star.drift * dt;
+          if (star.y - star.r > state.canvas.height) {
+            star.y = -star.r;
+            star.x = Math.random() * state.canvas.width;
+          }
+        });
+      };
+
+      const updateAsteroids = (dt) => {
+        state.asteroids.forEach((asteroid) => {
+          asteroid.x -= asteroid.speed * dt;
+          asteroid.y += asteroid.drift * dt;
+          asteroid.angle += asteroid.spin * dt;
+
+          if (asteroid.y < asteroid.r) {
+            asteroid.y = asteroid.r;
+            asteroid.drift *= -1;
+          }
+
+          if (asteroid.y > state.canvas.height - asteroid.r) {
+            asteroid.y = state.canvas.height - asteroid.r;
+            asteroid.drift *= -1;
+          }
+
+          if (asteroid.x + asteroid.r < 0) {
+            Object.assign(asteroid, createAsteroid());
+            state.score += 1;
+          }
+        });
+      };
+
+      const handleCollisions = () => {
+        if (state.hitCooldown > 0) {
+          return;
+        }
+
+        const { player } = state;
+        for (const asteroid of state.asteroids) {
+          const dx = player.x - asteroid.x;
+          const dy = player.y - asteroid.y;
+          const distance = Math.hypot(dx, dy);
+          if (distance < player.r + asteroid.r) {
+            state.health -= 1;
+            state.hitCooldown = 1;
+            if (state.health <= 0) {
+              state.health = 0;
+              endGame();
+            }
+            break;
+          }
+        }
+      };
+
+      const drawBackground = () => {
+        state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+        const gradient = state.ctx.createLinearGradient(0, 0, state.canvas.width, state.canvas.height);
+        gradient.addColorStop(0, "#1a1730");
+        gradient.addColorStop(1, "#0b0a13");
+        state.ctx.fillStyle = gradient;
+        state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+
+        state.ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+        state.stars.forEach((star) => {
+          state.ctx.beginPath();
+          state.ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+          state.ctx.fill();
+        });
+      };
+
+      const drawAsteroids = () => {
+        state.asteroids.forEach((asteroid) => {
+          state.ctx.save();
+          state.ctx.translate(asteroid.x, asteroid.y);
+          state.ctx.rotate(asteroid.angle);
+          state.ctx.beginPath();
+          state.ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+          state.ctx.strokeStyle = "rgba(255, 98, 248, 0.6)";
+          state.ctx.lineWidth = 2;
+          state.ctx.arc(0, 0, asteroid.r, 0, Math.PI * 2);
+          state.ctx.fill();
+          state.ctx.stroke();
+          state.ctx.restore();
+        });
+      };
+
+      const drawPlayer = () => {
+        const { player } = state;
+        state.ctx.beginPath();
+        state.ctx.fillStyle = "#8efbff";
+        state.ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+        state.ctx.fill();
+
+        state.ctx.strokeStyle = "rgba(255, 98, 248, 0.5)";
+        state.ctx.lineWidth = 3;
+        state.ctx.beginPath();
+        state.ctx.arc(player.x, player.y, player.r + 8, 0, Math.PI * 2);
+        state.ctx.stroke();
+
+        if (state.hitCooldown > 0) {
+          state.ctx.strokeStyle = "rgba(255, 98, 248, 0.7)";
+          state.ctx.lineWidth = 2;
+          state.ctx.beginPath();
+          state.ctx.arc(player.x, player.y, player.r + 14, 0, Math.PI * 2);
+          state.ctx.stroke();
+        }
+      };
+
+      const endGame = () => {
+        state.running = false;
+        state.paused = false;
+        state.stateEl.textContent = "Game Over";
+        setOverlay("Ship lost", "You took too many hits. Try again?", "Play Again");
+        state.startOverlay.classList.remove("hidden");
+      };
+
+      const frame = (timestamp) => {
+        const delta = Math.min(0.05, (timestamp - state.lastFrame) / 1000);
+        state.lastFrame = timestamp;
+
+        if (state.running && !state.paused) {
+          state.time += delta;
+          state.hitCooldown = Math.max(0, state.hitCooldown - delta);
+          handleInput(delta);
+          updateStars(delta);
+          updateAsteroids(delta);
+          handleCollisions();
+        }
+
+        drawBackground();
+        drawAsteroids();
+        drawPlayer();
+        updateHud();
+
+        requestAnimationFrame(frame);
+      };
+
+      const shouldBlockScroll = (key) => {
+        return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(key);
+      };
+
+      window.addEventListener("keydown", (event) => {
+        if (state.running && shouldBlockScroll(event.key)) {
+          event.preventDefault();
+        }
+        state.keys.add(event.key);
+      });
+
+      window.addEventListener("keyup", (event) => {
+        if (state.running && shouldBlockScroll(event.key)) {
+          event.preventDefault();
+        }
+        state.keys.delete(event.key);
+      });
+
+      const startGame = () => {
+        if (state.health <= 0 || (!state.running && state.time === 0 && !state.hasProgress)) {
+          resetGame();
+        }
+        state.running = true;
+        state.paused = false;
+        state.lastFrame = performance.now();
+        state.startBtn.textContent = "Running";
+        state.pauseBtn.textContent = "Pause";
+        state.stateEl.textContent = "Running";
+        state.startOverlay.classList.add("hidden");
+      };
+
+      const bindEvents = () => {
+        state.startBtn.addEventListener("click", startGame);
+        state.resetBtn.addEventListener("click", resetGame);
+        state.pauseBtn.addEventListener("click", () => {
+          if (!state.running) {
+            return;
+          }
+          state.paused = !state.paused;
+          state.pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+          state.startBtn.textContent = state.paused ? "Paused" : "Running";
+          state.stateEl.textContent = state.paused ? "Paused" : "Running";
+          if (state.paused) {
+            setOverlay("Paused", "Take a breather.", "Resume");
+            state.startOverlay.classList.remove("hidden");
+          } else {
+            state.startOverlay.classList.add("hidden");
+          }
+        });
+      };
+
+      const boot = () => {
+        if (!initElements()) {
+          return;
+        }
+        bindEvents();
+        resetGame();
+        requestAnimationFrame(frame);
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot, { once: true });
+      } else {
+        boot();
+      }
+    </script>
+  </body>
+</html>

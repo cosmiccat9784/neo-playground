@@ -1,0 +1,105 @@
+const buildCard = (game, options = {}) => {
+  const ratingBadge = typeof game.rating === "number" ? game.rating.toFixed(1) : "";
+  const badgeText = options.badge ?? (game.new ? "New" : ratingBadge);
+
+  return `
+    <article class="card">
+      <div class="thumb one"></div>
+      <div class="card-meta">
+        <h3>${game.title}</h3>
+        <span class="badge">${badgeText}</span>
+      </div>
+      <p>${game.tagline}</p>
+      <a class="card-link" href="${game.link}">Play now</a>
+    </article>
+  `;
+};
+
+const isNewRelease = (game) => {
+  const launchDate = game.launchDate ?? game.launch_date;
+  if (!launchDate) {
+    return false;
+  }
+  const launch = new Date(`${launchDate}T00:00:00`);
+  if (Number.isNaN(launch.getTime())) {
+    return false;
+  }
+  const now = new Date();
+  const diffDays = (now - launch) / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= 30;
+};
+
+const renderTopRated = (games) => {
+  const container = document.getElementById("top-rated-cards");
+  if (!container) {
+    return;
+  }
+
+  const sorted = [...games].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  container.innerHTML = sorted.map((game) => buildCard(game)).join("");
+
+  const featured = sorted[0];
+  if (featured) {
+    const featuredTitle = document.getElementById("featured-title");
+    const featuredLink = document.getElementById("featured-link");
+    const launchStatus = document.getElementById("launch-status");
+    const launchNote = document.getElementById("launch-note");
+
+    if (featuredTitle) {
+      featuredTitle.textContent = featured.title;
+    }
+    if (featuredLink) {
+      featuredLink.textContent = `Play ${featured.title}`;
+      featuredLink.setAttribute("href", featured.link);
+    }
+    if (launchStatus) {
+      launchStatus.textContent = featured.launchStatus ?? featured.launch_status ?? "Live";
+    }
+    if (launchNote) {
+      launchNote.textContent = featured.launchNote ?? featured.launch_note ?? `Now featuring ${featured.title}`;
+    }
+  }
+};
+
+const renderNew = (games) => {
+  const container = document.getElementById("new-cards");
+  if (!container) {
+    return;
+  }
+
+  const newGames = games.filter(isNewRelease);
+  if (!newGames.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <img class="empty-logo" src="assets/logo.png" alt="Neo Games logo" />
+        <h2>No games here.</h2>
+        <p>They’re on their way. Check back soon.</p>
+      </div>
+    `;
+    return;
+  }
+  container.innerHTML = newGames.map((game) => buildCard(game, { badge: "New" })).join("");
+};
+
+const loadGames = async () => {
+  if (window.NeoDB && window.NeoDB.enabled) {
+    const games = await window.NeoDB.fetchGames();
+    if (games.length) {
+      return games;
+    }
+  }
+  const data = await window.NeoStore.loadSiteData();
+  return data.games ?? [];
+};
+
+const boot = async () => {
+  try {
+    const games = await loadGames();
+    renderTopRated(games);
+    renderNew(games);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+boot();

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer Portal • Neo Games</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/logo.png" alt="Neo Games logo" />
+          <div>
+            <p class="brand-name">Neo Games</p>
+            <p class="brand-sub">Playground</p>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Discover</a>
+          <a href="new.html">New</a>
+          <a href="multiplayer.html">Multiplayer</a>
+          <a href="index.html#top-rated">Top Rated</a>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <main class="main">
+          <section class="dev-panel">
+            <h2>Developer Portal</h2>
+            <p class="dev-sub">Log in to add a new game to the platform.</p>
+
+            <form id="dev-login" class="dev-form">
+              <input id="dev-email" type="email" placeholder="Developer email" required />
+              <input id="dev-password" type="password" placeholder="Password" required />
+              <button type="submit">Log in</button>
+            </form>
+            <p id="dev-status" class="dev-status">Not signed in.</p>
+          </section>
+
+          <section class="dev-panel" id="dev-uploader">
+            <h3>Add a Game</h3>
+            <form id="dev-game-form" class="dev-form">
+              <input id="game-id" type="text" placeholder="Game ID (slug)" required />
+              <input id="game-title" type="text" placeholder="Title" required />
+              <input id="game-tagline" type="text" placeholder="Tagline" required />
+              <input id="game-genre" type="text" placeholder="Genre" required />
+              <input id="game-launch" type="date" required />
+              <input id="game-status" type="text" placeholder="Launch status (Live)" />
+              <input id="game-note" type="text" placeholder="Launch note" />
+              <input id="game-rating" type="number" min="0" max="5" step="0.1" placeholder="Rating (optional)" />
+              <label class="dev-file">
+                Upload JS game file (required)
+                <input id="game-file" type="file" accept=".js" required />
+              </label>
+              <button type="submit">Publish Game</button>
+            </form>
+            <p class="dev-hint">
+              Your JS file will be wrapped in a generated game page and stored in Supabase Storage.
+            </p>
+          </section>
+        </main>
+      </div>
+
+      <footer class="footer">
+        <p>Neo Games Lab • Built for fast browser play.</p>
+        <div class="links">
+          <a href="index.html">About</a>
+          <a href="new.html">Developers</a>
+          <a href="multiplayer.html">Support</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="data/supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="data/supabase.js"></script>
+    <script src="dev.js"></script>
+  </body>
+</html>
