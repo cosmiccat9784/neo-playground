@@ -104,6 +104,7 @@ gameForm.addEventListener("submit", async (event) => {
   const title = document.getElementById("game-title").value.trim();
   const tagline = document.getElementById("game-tagline").value.trim();
   const genre = document.getElementById("game-genre").value.trim();
+  const controls = document.getElementById("game-controls").value.trim();
   const launchDate = document.getElementById("game-launch").value;
   const launchStatus = document.getElementById("game-status").value.trim() || "Live";
   const launchNote = document.getElementById("game-note").value.trim() || `Now featuring ${title}`;
@@ -127,6 +128,9 @@ gameForm.addEventListener("submit", async (event) => {
   formData.append("title", title);
   formData.append("tagline", tagline);
   formData.append("genre", genre);
+  if (controls) {
+    formData.append("controls", controls);
+  }
   formData.append("launchDate", launchDate);
   formData.append("launchStatus", launchStatus);
   formData.append("launchNote", launchNote);
