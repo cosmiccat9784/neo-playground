@@ -109,6 +109,7 @@ const mapGameRow = (row) => ({
   launchStatus: row.launch_status,
   launchNote: row.launch_note,
   genre: row.genre,
+  controls: row.controls,
   link: row.link,
 });
 
@@ -117,10 +118,10 @@ const fetchGames = async () => {
   if (!activeClient) {
     return [];
   }
-  
+
   const { data: games, error: gamesError } = await activeClient
     .from("games")
-    .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, link")
+    .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, controls, link")
     .order("launch_date", { ascending: false });
   if (gamesError) {
     console.error(gamesError);
@@ -159,7 +160,7 @@ const fetchGame = async (gameId) => {
   }
   const { data, error } = await activeClient
     .from("games")
-    .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, link")
+    .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, controls, link")
     .eq("id", gameId)
     .single();
   if (error) {
