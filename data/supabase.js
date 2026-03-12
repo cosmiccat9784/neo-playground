@@ -128,6 +128,23 @@ const fetchGames = async () => {
   return (data ?? []).map(mapGameRow);
 };
 
+const fetchGame = async (gameId) => {
+  const activeClient = getClient();
+  if (!activeClient) {
+    return null;
+  }
+  const { data, error } = await activeClient
+    .from("games")
+    .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, link")
+    .eq("id", gameId)
+    .single();
+  if (error) {
+    console.error(error);
+    return null;
+  }
+  return data ? mapGameRow(data) : null;
+};
+
 const uploadGameFile = async (slug, file) => {
   const activeClient = getClient();
   if (!activeClient) {
@@ -177,6 +194,7 @@ window.NeoDB = {
   fetchRatings,
   submitRating,
   fetchGames,
+  fetchGame,
   insertGame,
   uploadGameFile,
 };
