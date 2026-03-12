@@ -1,5 +1,6 @@
 const buildCard = (game, options = {}) => {
-  const ratingBadge = typeof game.rating === "number" ? game.rating.toFixed(1) : "";
+  const ratingValue = Number(game.rating);
+  const ratingBadge = Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : "Unrated";
   const badgeText = options.badge ?? (game.new ? "New" : ratingBadge);
 
   return `
