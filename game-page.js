@@ -76,7 +76,28 @@ const loadGameScript = (gameId) => {
   const jsUrl = `${baseUrl}/storage/v1/object/public/games/${gameId}/game.js`;
   const script = document.createElement("script");
   script.src = jsUrl;
-  script.onload = () => setOverlayStatus("Game script ready.");
+  script.onload = () => {
+    setOverlayStatus("Game script ready.");
+    const startBtn = document.getElementById("start-btn");
+    const overlay = document.getElementById("start-overlay");
+    const fallbackStart = () => {
+      if (window.NeoStartGame) {
+        window.NeoStartGame();
+      } else {
+        setOverlayStatus("Game not ready yet. Try again.");
+      }
+    };
+    if (startBtn) {
+      startBtn.addEventListener("click", fallbackStart);
+    }
+    if (overlay) {
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+          fallbackStart();
+        }
+      });
+    }
+  };
   script.onerror = () => setOverlayStatus("Game script failed to load.");
   document.body.appendChild(script);
 };
