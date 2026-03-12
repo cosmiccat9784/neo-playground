@@ -94,6 +94,11 @@ const loadGameScript = async (gameId) => {
       throw new Error("Script fetch failed");
     }
     scriptText = await response.text();
+    const trimmed = scriptText.trim();
+    if (trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html")) {
+      setOverlayStatus("Game file is HTML, not JS. Re-publish with the JS file.");
+      return;
+    }
     await injectInlineScript(scriptText, jsUrl);
   } catch (error) {
     setOverlayStatus("Game script failed to load.");
@@ -117,7 +122,12 @@ const loadGameScript = async (gameId) => {
               if (window.NeoStartGame) {
                 window.NeoStartGame();
               } else {
-                setOverlayStatus("Game failed to initialize.");
+                const hasStart = scriptText.includes("NeoStartGame");
+                setOverlayStatus(
+                  hasStart
+                    ? "Game failed to initialize."
+                    : "Game script missing NeoStartGame. Re-publish the correct JS file."
+                );
               }
             })
             .catch(() => setOverlayStatus("Game script failed to load."));
