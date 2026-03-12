@@ -29,7 +29,8 @@ const setMeta = (game) => {
   if (game.genre) {
     parts.push(game.genre);
   }
-  parts.push("Single Player", "Keyboard");
+  const controls = game.controls || "Keyboard";
+  parts.push("Single Player", controls);
   gameMeta.textContent = parts.join(" / ");
 };
 
