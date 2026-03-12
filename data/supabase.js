@@ -117,15 +117,39 @@ const fetchGames = async () => {
   if (!activeClient) {
     return [];
   }
-  const { data, error } = await activeClient
+  
+  const { data: games, error: gamesError } = await activeClient
     .from("games")
     .select("id, title, tagline, rating, launch_date, launch_status, launch_note, genre, link")
     .order("launch_date", { ascending: false });
-  if (error) {
-    console.error(error);
+  if (gamesError) {
+    console.error(gamesError);
     return [];
   }
-  return (data ?? []).map(mapGameRow);
+
+  const { data: ratings, error: ratingsError } = await activeClient
+    .from("ratings")
+    .select("game_id, rating");
+  if (ratingsError) {
+    console.error(ratingsError);
+  }
+
+  const ratingMap = new Map();
+  (ratings ?? []).forEach((row) => {
+    const entry = ratingMap.get(row.game_id) || { total: 0, count: 0 };
+    entry.total += row.rating;
+    entry.count += 1;
+    ratingMap.set(row.game_id, entry);
+  });
+
+  return (games ?? []).map((row) => {
+    const base = mapGameRow(row);
+    const stats = ratingMap.get(row.id);
+    return {
+      ...base,
+      rating: stats && stats.count ? stats.total / stats.count : null,
+    };
+  });
 };
 
 const fetchGame = async (gameId) => {
