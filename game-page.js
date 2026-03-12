@@ -168,6 +168,7 @@ const boot = async () => {
     setNotFound("Missing game id.");
     return;
   }
+  window.NeoGameId = gameId;
   setOverlayStatus("Loading game...");
   await loadGameMeta(gameId);
   await loadGameScript(gameId);
