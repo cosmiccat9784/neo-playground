@@ -94,7 +94,8 @@ const loadGameScript = async (gameId) => {
     return;
   }
   const baseUrl = window.NeoSupabaseConfig.url.replace(/\/$/, "");
-  const jsUrl = `${baseUrl}/storage/v1/object/public/games/${gameId}/game.js`;
+  const cacheBust = Date.now();
+  const jsUrl = `${baseUrl}/storage/v1/object/public/games/${gameId}/game.js?v=${cacheBust}`;
   try {
     await injectScript(jsUrl);
   } catch (error) {
@@ -142,7 +143,7 @@ const loadGameScript = async (gameId) => {
   if (window.NeoStartGame) {
     setOverlayStatus("Game script ready.");
   } else {
-    setOverlayStatus("Game script loaded. Tap Start.");
+    setOverlayStatus("Game script loaded but did not initialize.");
   }
 };
 
