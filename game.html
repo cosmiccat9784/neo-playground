@@ -57,7 +57,13 @@
                 <div class="overlay-card">
                   <h3 id="overlay-title">Ready to launch?</h3>
                   <p id="overlay-subtitle">Preparing game...</p>
-                  <button id="start-btn" type="button">Start Game</button>
+                  <button
+                    id="start-btn"
+                    type="button"
+                    onclick="window.NeoStartGame && window.NeoStartGame()"
+                  >
+                    Start Game
+                  </button>
                 </div>
               </div>
             </div>
