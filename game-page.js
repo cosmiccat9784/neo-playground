@@ -67,26 +67,17 @@ const loadGameMeta = async (gameId) => {
   setMeta({ genre: "Arcade" });
 };
 
-const injectScript = (src) =>
+const injectInlineScript = (code, sourceUrl) =>
   new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.onload = () => resolve(true);
-    script.onerror = () => reject(new Error("Script failed to load"));
-    document.body.appendChild(script);
+    try {
+      const script = document.createElement("script");
+      script.text = `${code}\n//# sourceURL=${sourceUrl}`;
+      document.body.appendChild(script);
+      resolve(true);
+    } catch (error) {
+      reject(error);
+    };
   });
-
-const fetchAndInjectScript = async (src) => {
-  const response = await fetch(src, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Script fetch failed");
-  }
-  const text = await response.text();
-  const blob = new Blob([text], { type: "application/javascript" });
-  const blobUrl = URL.createObjectURL(blob);
-  await injectScript(blobUrl);
-  URL.revokeObjectURL(blobUrl);
-};
 
 const loadGameScript = async (gameId) => {
   if (!window.NeoSupabaseConfig?.url) {
@@ -96,8 +87,14 @@ const loadGameScript = async (gameId) => {
   const baseUrl = window.NeoSupabaseConfig.url.replace(/\/$/, "");
   const cacheBust = Date.now();
   const jsUrl = `${baseUrl}/storage/v1/object/public/games/${gameId}/game.js?v=${cacheBust}`;
+  let scriptText = "";
   try {
-    await injectScript(jsUrl);
+    const response = await fetch(jsUrl, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Script fetch failed");
+    }
+    scriptText = await response.text();
+    await injectInlineScript(scriptText, jsUrl);
   } catch (error) {
     setOverlayStatus("Game script failed to load.");
     return;
@@ -115,7 +112,7 @@ const loadGameScript = async (gameId) => {
           window.NeoStartGame();
         } else {
           setOverlayStatus("Game still not ready. Rebuilding script...");
-          fetchAndInjectScript(jsUrl)
+          injectInlineScript(scriptText, jsUrl)
             .then(() => {
               if (window.NeoStartGame) {
                 window.NeoStartGame();
