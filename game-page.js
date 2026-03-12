@@ -67,39 +67,83 @@ const loadGameMeta = async (gameId) => {
   setMeta({ genre: "Arcade" });
 };
 
-const loadGameScript = (gameId) => {
+const injectScript = (src) =>
+  new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error("Script failed to load"));
+    document.body.appendChild(script);
+  });
+
+const fetchAndInjectScript = async (src) => {
+  const response = await fetch(src, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Script fetch failed");
+  }
+  const text = await response.text();
+  const blob = new Blob([text], { type: "application/javascript" });
+  const blobUrl = URL.createObjectURL(blob);
+  await injectScript(blobUrl);
+  URL.revokeObjectURL(blobUrl);
+};
+
+const loadGameScript = async (gameId) => {
   if (!window.NeoSupabaseConfig?.url) {
     setOverlayStatus("Supabase not configured.");
     return;
   }
   const baseUrl = window.NeoSupabaseConfig.url.replace(/\/$/, "");
   const jsUrl = `${baseUrl}/storage/v1/object/public/games/${gameId}/game.js`;
-  const script = document.createElement("script");
-  script.src = jsUrl;
-  script.onload = () => {
-    setOverlayStatus("Game script ready.");
-    const startBtn = document.getElementById("start-btn");
-    const overlay = document.getElementById("start-overlay");
-    const fallbackStart = () => {
-      if (window.NeoStartGame) {
-        window.NeoStartGame();
-      } else {
-        setOverlayStatus("Game not ready yet. Try again.");
-      }
-    };
-    if (startBtn) {
-      startBtn.addEventListener("click", fallbackStart);
-    }
-    if (overlay) {
-      overlay.addEventListener("click", (event) => {
-        if (event.target === overlay) {
-          fallbackStart();
+  try {
+    await injectScript(jsUrl);
+  } catch (error) {
+    setOverlayStatus("Game script failed to load.");
+    return;
+  }
+
+  const startBtn = document.getElementById("start-btn");
+  const overlay = document.getElementById("start-overlay");
+  const fallbackStart = () => {
+    if (window.NeoStartGame) {
+      window.NeoStartGame();
+    } else {
+      setOverlayStatus("Game not ready yet. Retrying...");
+      setTimeout(() => {
+        if (window.NeoStartGame) {
+          window.NeoStartGame();
+        } else {
+          setOverlayStatus("Game still not ready. Rebuilding script...");
+          fetchAndInjectScript(jsUrl)
+            .then(() => {
+              if (window.NeoStartGame) {
+                window.NeoStartGame();
+              } else {
+                setOverlayStatus("Game failed to initialize.");
+              }
+            })
+            .catch(() => setOverlayStatus("Game script failed to load."));
         }
-      });
+      }, 150);
     }
   };
-  script.onerror = () => setOverlayStatus("Game script failed to load.");
-  document.body.appendChild(script);
+
+  if (startBtn) {
+    startBtn.addEventListener("click", fallbackStart);
+  }
+  if (overlay) {
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) {
+        fallbackStart();
+      }
+    });
+  }
+
+  if (window.NeoStartGame) {
+    setOverlayStatus("Game script ready.");
+  } else {
+    setOverlayStatus("Game script loaded. Tap Start.");
+  }
 };
 
 const boot = async () => {
@@ -110,7 +154,7 @@ const boot = async () => {
   }
   setOverlayStatus("Loading game...");
   await loadGameMeta(gameId);
-  loadGameScript(gameId);
+  await loadGameScript(gameId);
 };
 
 boot();
