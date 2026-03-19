@@ -1,21 +1,23 @@
-const WORDS = [
-  "orbit",
-  "neons",
-  "drift",
-  "aster",
-  "laser",
-  "pixel",
-  "glide",
-  "arena",
-  "space",
-  "shift",
-  "flare",
-  "novae",
-  "dream",
-  "pulse",
-  "stack",
-  "score",
-];
+const WORDS = Array.isArray(window.NeoWordleWords)
+  ? window.NeoWordleWords
+  : [
+      "ORBIT",
+      "NEONS",
+      "DRIFT",
+      "ASTER",
+      "LASER",
+      "PIXEL",
+      "GLIDE",
+      "ARENA",
+      "SPACE",
+      "SHIFT",
+      "FLARE",
+      "NOVAE",
+      "DREAM",
+      "PULSE",
+      "STACK",
+      "SCORE",
+    ];
 
 const boardEl = document.getElementById("wordle-board");
 const statusEl = document.getElementById("wordle-status");
@@ -23,6 +25,8 @@ const keyboardEl = document.getElementById("wordle-keyboard");
 const helpBtn = document.getElementById("wordle-help");
 const modalEl = document.getElementById("wordle-modal");
 const closeBtn = document.getElementById("wordle-close");
+
+const WORD_SET = new Set(WORDS.map((word) => word.toUpperCase()));
 
 const state = {
   target: WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase(),
@@ -147,6 +151,10 @@ const submitGuess = () => {
     return;
   }
   const guess = state.guesses[state.currentRow].join("");
+  if (!WORD_SET.has(guess)) {
+    setStatus("Not in word list.");
+    return;
+  }
   const results = evaluateGuess(state.guesses[state.currentRow]);
   applyResultStyles(state.currentRow, results);
   results.forEach((result, index) => {
