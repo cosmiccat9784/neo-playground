@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minesweeper - Neo Games Arcade</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="../arcade.html">
+          <img class="brand-logo" src="../assets/logo.png" alt="Neo Games logo" />
+          <div>
+            <p class="brand-name">Neo Games</p>
+            <p class="brand-sub">Arcade</p>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="../index.html">Discover</a>
+          <a href="../new.html">New</a>
+          <a href="../multiplayer.html">Multiplayer</a>
+          <a href="../arcade.html">Arcade</a>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <main class="main">
+          <section class="player">
+            <div class="player-header">
+              <div>
+                <h2>Minesweeper</h2>
+                <p>Classic / Single Player / Mouse + Keyboard</p>
+              </div>
+            </div>
+
+            <div class="ms-panel">
+              <div class="ms-stat">
+                <span>Mines Left</span>
+                <strong id="mines-left">15</strong>
+              </div>
+              <div class="ms-stat">
+                <span>Time</span>
+                <strong id="timer">0</strong>
+              </div>
+              <button id="reset-btn" type="button">Reset</button>
+            </div>
+
+            <div id="board" class="ms-board" aria-label="Minesweeper board"></div>
+
+            <div class="player-status">
+              <span>Status</span>
+              <strong id="state">Ready</strong>
+              <span class="status-hint">Left click to reveal. Right click to flag.</span>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="footer">
+        <p>Neo Games Lab - Built for fast browser play.</p>
+        <div class="links">
+          <a href="../index.html">About</a>
+          <a href="../new.html">Developers</a>
+          <a href="../multiplayer.html">Support</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="minesweeper.js"></script>
+  </body>
+</html>
