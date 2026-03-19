@@ -48,6 +48,7 @@
   font-size: 16px;
   color: #1b1b1b;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
 }
 
 .sol-card.red {
@@ -71,7 +72,7 @@
   left: 6px;
   display: grid;
   gap: 2px;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   align-items: center;
   justify-items: center;
@@ -87,29 +88,30 @@
 
 .sol-card .pips {
   position: absolute;
-  inset: 20px 8px;
+  inset: 22px 10px;
   display: grid;
   grid-template-rows: repeat(5, 1fr);
   grid-template-columns: repeat(3, 1fr);
   place-items: center;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .sol-card .pip {
   opacity: 0.9;
+  line-height: 1;
 }
 
 .sol-card .face {
   position: absolute;
-  inset: 18px 10px;
+  inset: 20px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
 }
 
 .sol-card .face .suit {
-  font-size: 20px;
+  font-size: 18px;
 }
