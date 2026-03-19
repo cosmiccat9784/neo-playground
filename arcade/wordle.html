@@ -33,6 +33,7 @@
                 <h2>Wordle</h2>
                 <p>Classic / Single Player / Keyboard</p>
               </div>
+              <button id="wordle-help" class="wordle-help-btn" type="button">Help</button>
             </div>
 
             <div id="wordle-board" class="wordle-board" aria-label="Wordle board"></div>
@@ -50,6 +51,28 @@
           <a href="../multiplayer.html">Support</a>
         </div>
       </footer>
+    </div>
+
+    <div id="wordle-modal" class="wordle-modal hidden" role="dialog" aria-modal="true">
+      <div class="wordle-modal-card">
+        <h3>How to Play</h3>
+        <p>Guess the 5-letter word in 6 tries.</p>
+        <div class="wordle-legend">
+          <div class="wordle-legend-row">
+            <div class="wordle-legend-tile correct">W</div>
+            <span>Green: letter is in the correct spot.</span>
+          </div>
+          <div class="wordle-legend-row">
+            <div class="wordle-legend-tile present">O</div>
+            <span>Yellow: letter is in the word, wrong spot.</span>
+          </div>
+          <div class="wordle-legend-row">
+            <div class="wordle-legend-tile absent">R</div>
+            <span>Gray: letter is not in the word.</span>
+          </div>
+        </div>
+        <button id="wordle-close" type="button">Close</button>
+      </div>
     </div>
 
     <script src="wordle.js"></script>

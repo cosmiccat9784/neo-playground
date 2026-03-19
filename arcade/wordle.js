@@ -20,6 +20,9 @@ const WORDS = [
 const boardEl = document.getElementById("wordle-board");
 const statusEl = document.getElementById("wordle-status");
 const keyboardEl = document.getElementById("wordle-keyboard");
+const helpBtn = document.getElementById("wordle-help");
+const modalEl = document.getElementById("wordle-modal");
+const closeBtn = document.getElementById("wordle-close");
 
 const state = {
   target: WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase(),
@@ -198,7 +201,26 @@ keyboardEl.addEventListener("click", (event) => {
   handleKey(key.dataset.key);
 });
 
+const openHelp = () => {
+  modalEl.classList.remove("hidden");
+};
+
+const closeHelp = () => {
+  modalEl.classList.add("hidden");
+};
+
+helpBtn.addEventListener("click", () => openHelp());
+closeBtn.addEventListener("click", () => closeHelp());
+modalEl.addEventListener("click", (event) => {
+  if (event.target === modalEl) {
+    closeHelp();
+  }
+});
+
 window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeHelp();
+  }
   if (event.key === "Enter") {
     handleKey("ENTER");
   } else if (event.key === "Backspace") {
