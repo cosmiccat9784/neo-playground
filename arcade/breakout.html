@@ -62,9 +62,16 @@
             </div>
             <div class="rating-panel">
               <div>
-                <h3>High Scores</h3>
-                <p class="rating-meta">Top 5 runs saved locally.</p>
+                <h3>Global Leaderboard</h3>
+                <p id="leaderboard-message" class="rating-meta">Top 10 worldwide.</p>
               </div>
+              <form id="leaderboard-form" class="leaderboard-form">
+                <input id="leaderboard-name" type="text" maxlength="20" placeholder="Your name" />
+                <input id="leaderboard-score" type="text" readonly placeholder="Score" />
+                <button id="leaderboard-submit" type="submit" disabled>Submit</button>
+              </form>
+              <div id="leaderboard-list" class="leaderboard-list"></div>
+              <p class="rating-meta">Local top 5 runs</p>
               <div id="highscore-list" class="leaderboard-list"></div>
             </div>
           </section>
@@ -81,6 +88,7 @@
       </footer>
     </div>
 
+    <script src="../data/supabase-config.js"></script>
     <script src="breakout.js"></script>
   </body>
 </html>

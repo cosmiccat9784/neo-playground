@@ -13,6 +13,12 @@ const els = {
   resetBtn: document.getElementById("reset-btn"),
   pauseBtn: document.getElementById("pause-btn"),
   highScoreList: document.getElementById("highscore-list"),
+  leaderboardForm: document.getElementById("leaderboard-form"),
+  leaderboardName: document.getElementById("leaderboard-name"),
+  leaderboardScore: document.getElementById("leaderboard-score"),
+  leaderboardSubmit: document.getElementById("leaderboard-submit"),
+  leaderboardList: document.getElementById("leaderboard-list"),
+  leaderboardMessage: document.getElementById("leaderboard-message"),
 };
 
 const state = {
@@ -23,6 +29,7 @@ const state = {
   score: 0,
   lives: 3,
   level: 1,
+  lastScore: 0,
   paddle: { x: 340, y: 410, w: 140, h: 14, speed: 420 },
   ball: { x: 410, y: 360, r: 8, vx: 220, vy: -220 },
   bricks: [],
@@ -33,6 +40,19 @@ const state = {
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const HIGHSCORE_KEY = "neo-arcade-breakout-highscores-v1";
+const GAME_ID = "breakout";
+
+const getSupabaseConfig = () => window.NeoSupabaseConfig || {};
+const getSupabaseUrl = () => (getSupabaseConfig().url || "").replace(/\/$/, "");
+const getSupabaseKey = () => getSupabaseConfig().anonKey || "";
+const isLeaderboardEnabled = () =>
+  Boolean(getSupabaseUrl() && getSupabaseKey() && !getSupabaseUrl().includes("YOUR_"));
+const leaderboardHeaders = () => ({
+  "Content-Type": "application/json",
+  apikey: getSupabaseKey(),
+  Authorization: `Bearer ${getSupabaseKey()}`,
+  Prefer: "return=minimal",
+});
 
 const updateHud = () => {
   els.scoreEl.textContent = state.score.toString();
@@ -50,6 +70,13 @@ const setOverlay = (title, subtitle, buttonText) => {
   els.startBtn.textContent = buttonText;
 };
 
+const setLeaderboardMessage = (text) => {
+  if (!els.leaderboardMessage) {
+    return;
+  }
+  els.leaderboardMessage.textContent = text;
+};
+
 const showOverlay = () => {
   els.startOverlay.classList.remove("hidden");
 };
@@ -65,6 +92,34 @@ const resetBall = () => {
   const speed = 260 + (state.level - 1) * 18;
   state.ball.vx = Math.cos(angle) * speed;
   state.ball.vy = -Math.abs(Math.sin(angle) * speed);
+};
+
+const fetchGlobalLeaderboard = async () => {
+  if (!isLeaderboardEnabled()) {
+    return [];
+  }
+  const baseUrl = getSupabaseUrl();
+  const query = `game_id=eq.${encodeURIComponent(GAME_ID)}&select=username,score,created_at&order=score.desc,created_at.asc&limit=10`;
+  const response = await fetch(`${baseUrl}/rest/v1/scores?${query}`, {
+    headers: leaderboardHeaders(),
+  });
+  if (!response.ok) {
+    return [];
+  }
+  return response.json();
+};
+
+const submitGlobalScore = async (username, score) => {
+  if (!isLeaderboardEnabled()) {
+    return false;
+  }
+  const baseUrl = getSupabaseUrl();
+  const response = await fetch(`${baseUrl}/rest/v1/scores`, {
+    method: "POST",
+    headers: leaderboardHeaders(),
+    body: JSON.stringify({ game_id: GAME_ID, username, score }),
+  });
+  return response.ok;
 };
 
 const loadHighScores = () => {
@@ -113,6 +168,42 @@ const renderHighScores = (scores) => {
     .join("");
 };
 
+const renderGlobalLeaderboard = (scores) => {
+  if (!els.leaderboardList) {
+    return;
+  }
+  if (!isLeaderboardEnabled()) {
+    els.leaderboardList.innerHTML =
+      "<p class=\"modal-message\">Global leaderboard offline.</p>";
+    return;
+  }
+  if (!scores.length) {
+    els.leaderboardList.innerHTML =
+      "<p class=\"modal-message\">No scores yet. Be the first!</p>";
+    return;
+  }
+  els.leaderboardList.innerHTML = scores
+    .map(
+      (entry, index) => `
+        <div class="leaderboard-row">
+          <strong>#${index + 1}</strong>
+          <span>${entry.username || "Anonymous"}</span>
+          <span>${entry.score}</span>
+        </div>
+      `
+    )
+    .join("");
+};
+
+const refreshGlobalLeaderboard = async () => {
+  try {
+    const scores = await fetchGlobalLeaderboard();
+    renderGlobalLeaderboard(scores);
+  } catch (error) {
+    renderGlobalLeaderboard([]);
+  }
+};
+
 const buildBricks = () => {
   const bricks = [];
   for (let row = 0; row < state.rows; row += 1) {
@@ -133,6 +224,7 @@ const resetGame = () => {
   state.score = 0;
   state.lives = 3;
   state.level = 1;
+  state.lastScore = 0;
   state.running = false;
   state.paused = false;
   state.paddle.x = (canvas.width - state.paddle.w) / 2;
@@ -145,6 +237,12 @@ const resetGame = () => {
   setOverlay("Ready?", "Left/Right to move. Clear all bricks.", "Start Game");
   showOverlay();
   els.pauseBtn.textContent = "Pause";
+  if (els.leaderboardScore) {
+    els.leaderboardScore.value = "";
+  }
+  if (els.leaderboardSubmit) {
+    els.leaderboardSubmit.disabled = true;
+  }
 };
 
 const allBricksCleared = () => state.bricks.every((brick) => !brick.alive);
@@ -240,7 +338,14 @@ const updateBall = (dt) => {
       setStatus("Game Over");
       setOverlay("Game over", "Out of lives. Try again?", "Play Again");
       showOverlay();
+      state.lastScore = state.score;
       renderHighScores(recordHighScore(state.score));
+      if (els.leaderboardScore) {
+        els.leaderboardScore.value = state.lastScore.toString();
+      }
+      if (els.leaderboardSubmit) {
+        els.leaderboardSubmit.disabled = !isLeaderboardEnabled();
+      }
     } else {
       resetBall();
       setStatus("Ready");
@@ -346,6 +451,31 @@ els.pauseBtn.addEventListener("click", () => {
   }
 });
 
+if (els.leaderboardForm) {
+  els.leaderboardForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!isLeaderboardEnabled()) {
+      setLeaderboardMessage("Global leaderboard offline.");
+      return;
+    }
+    if (!state.lastScore) {
+      return;
+    }
+    const rawName = els.leaderboardName?.value || "";
+    const username = rawName.trim().slice(0, 20) || "Anonymous";
+    const success = await submitGlobalScore(username, state.lastScore);
+    if (success) {
+      setLeaderboardMessage("Score submitted!");
+      if (els.leaderboardSubmit) {
+        els.leaderboardSubmit.disabled = true;
+      }
+      await refreshGlobalLeaderboard();
+    } else {
+      setLeaderboardMessage("Score submit failed. Try again.");
+    }
+  });
+}
+
 window.addEventListener("keydown", (event) => {
   if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
     event.preventDefault();
@@ -359,4 +489,10 @@ window.addEventListener("keyup", (event) => {
 
 resetGame();
 renderHighScores(loadHighScores());
+if (isLeaderboardEnabled()) {
+  setLeaderboardMessage("Top 10 worldwide.");
+} else {
+  setLeaderboardMessage("Global leaderboard offline.");
+}
+refreshGlobalLeaderboard();
 requestAnimationFrame(loop);
