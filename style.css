@@ -676,6 +676,27 @@ canvas {
   transform: translateY(-2px);
 }
 
+.ttt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  gap: 12px;
+  justify-items: center;
+  margin: 0 auto 20px;
+  width: min(420px, 100%);
+}
+
+.ttt-cell {
+  width: 120px;
+  height: 120px;
+  border-radius: 18px;
+  background: rgba(13, 12, 22, 0.75);
+  border: 1px solid rgba(77, 232, 255, 0.25);
+  color: #f7f4ff;
+  font-size: 48px;
+  font-weight: 700;
+  box-shadow: inset 0 0 12px rgba(77, 232, 255, 0.2);
+}
+
 .grid {
   display: flex;
   flex-direction: column;
