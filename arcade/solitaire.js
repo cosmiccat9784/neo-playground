@@ -6,6 +6,7 @@ const stateEl = document.getElementById("state");
 const movesEl = document.getElementById("moves");
 
 const suits = ["S", "H", "D", "C"];
+const symbols = { S: "♠", H: "♥", D: "♦", C: "♣" };
 const colors = { S: "black", H: "red", D: "red", C: "black" };
 const ranks = [
   { value: 1, label: "A" },
@@ -109,7 +110,7 @@ const canMoveToTableau = (card, pile) => {
   return card.color !== top.color && card.rank === top.rank - 1;
 };
 
-const cardLabel = (card) => `${card.label} ${card.suit}`;
+const cardLabel = (card) => `${card.label}${symbols[card.suit]}`;
 
 const clearSelected = () => {
   state.selected = null;
