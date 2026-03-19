@@ -148,7 +148,7 @@ const renderPile = (pileEl, pile, options = {}) => {
   pileEl.innerHTML = "";
   pile.forEach((card, index) => {
     const cardEl = document.createElement("div");
-    cardEl.className = "card";
+    cardEl.className = "sol-card";
     if (card.color === "red") {
       cardEl.classList.add("red");
     }
@@ -168,7 +168,7 @@ const renderPile = (pileEl, pile, options = {}) => {
       state.selected.pileIndex === options.pileIndex &&
       state.selected.cardIndex === index
     ) {
-      cardEl.classList.add("selected");
+    cardEl.classList.add("selected");
     }
     pileEl.appendChild(cardEl);
   });
@@ -178,7 +178,7 @@ const renderStock = () => {
   stockEl.innerHTML = "";
   if (state.stock.length) {
     const cardEl = document.createElement("div");
-    cardEl.className = "card face-down";
+    cardEl.className = "sol-card face-down";
     cardEl.textContent = "";
     stockEl.appendChild(cardEl);
   }

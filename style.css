@@ -645,7 +645,7 @@ canvas {
   min-height: 220px;
 }
 
-.card {
+.sol-card {
   position: absolute;
   left: 0;
   width: 90px;
@@ -662,16 +662,16 @@ canvas {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
 }
 
-.card.red {
+.sol-card.red {
   color: #ff8bd4;
 }
 
-.card.face-down {
+.sol-card.face-down {
   background: linear-gradient(135deg, #1a1730, #0b0a13);
   border-color: rgba(77, 232, 255, 0.35);
 }
 
-.card.selected {
+.sol-card.selected {
   outline: 2px solid var(--neon-blue);
   transform: translateY(-2px);
 }
