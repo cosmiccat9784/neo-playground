@@ -522,6 +522,22 @@ canvas {
   color: var(--text-muted);
 }
 
+.leaderboard-row.split {
+  display: grid;
+  grid-template-columns: minmax(48px, auto) 1fr minmax(60px, auto);
+  gap: 12px;
+}
+
+.leaderboard-row.split .lb-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-row.split .lb-score {
+  text-align: right;
+}
+
 .grid {
   display: flex;
   flex-direction: column;

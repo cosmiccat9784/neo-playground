@@ -159,9 +159,10 @@ const renderHighScores = (scores) => {
   els.highScoreList.innerHTML = scores
     .map(
       (entry, index) => `
-        <div class="leaderboard-row">
-          <strong>#${index + 1}</strong>
-          <span>${entry.score}</span>
+        <div class="leaderboard-row split">
+          <strong class="lb-rank">#${index + 1}</strong>
+          <span class="lb-name">Local</span>
+          <span class="lb-score">${entry.score}</span>
         </div>
       `
     )
@@ -185,10 +186,10 @@ const renderGlobalLeaderboard = (scores) => {
   els.leaderboardList.innerHTML = scores
     .map(
       (entry, index) => `
-        <div class="leaderboard-row">
-          <strong>#${index + 1}</strong>
-          <span>${entry.username || "Anonymous"}</span>
-          <span>${entry.score}</span>
+        <div class="leaderboard-row split">
+          <strong class="lb-rank">#${index + 1}</strong>
+          <span class="lb-name">${entry.username || "Anonymous"}</span>
+          <span class="lb-score">${entry.score}</span>
         </div>
       `
     )
