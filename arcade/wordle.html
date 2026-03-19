@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordle - Neo Games Arcade</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="wordle.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="../arcade.html">
+          <img class="brand-logo" src="../assets/logo.png" alt="Neo Games logo" />
+          <div>
+            <p class="brand-name">Neo Games</p>
+            <p class="brand-sub">Arcade</p>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="../index.html">Discover</a>
+          <a href="../new.html">New</a>
+          <a href="../multiplayer.html">Multiplayer</a>
+          <a href="../arcade.html">Arcade</a>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <main class="main">
+          <section class="player">
+            <div class="player-header">
+              <div>
+                <h2>Wordle</h2>
+                <p>Classic / Single Player / Keyboard</p>
+              </div>
+            </div>
+
+            <div id="wordle-board" class="wordle-board" aria-label="Wordle board"></div>
+            <div id="wordle-status" class="wordle-status">Guess the 5-letter word.</div>
+            <div id="wordle-keyboard" class="wordle-keyboard" aria-label="Wordle keyboard"></div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="footer">
+        <p>Neo Games Lab - Built for fast browser play.</p>
+        <div class="links">
+          <a href="../index.html">About</a>
+          <a href="../new.html">Developers</a>
+          <a href="../multiplayer.html">Support</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="wordle.js"></script>
+  </body>
+</html>
