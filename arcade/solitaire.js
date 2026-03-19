@@ -110,7 +110,87 @@ const canMoveToTableau = (card, pile) => {
   return card.color !== top.color && card.rank === top.rank - 1;
 };
 
-const cardLabel = (card) => `${card.label}${symbols[card.suit]}`;
+const pipLayouts = {
+  1: [[2, 1]],
+  2: [[0, 1], [4, 1]],
+  3: [[0, 1], [2, 1], [4, 1]],
+  4: [[0, 0], [0, 2], [4, 0], [4, 2]],
+  5: [[0, 0], [0, 2], [2, 1], [4, 0], [4, 2]],
+  6: [[0, 0], [0, 2], [2, 0], [2, 2], [4, 0], [4, 2]],
+  7: [[0, 0], [0, 2], [2, 0], [2, 1], [2, 2], [4, 0], [4, 2]],
+  8: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2], [3, 1], [4, 0], [4, 2]],
+  9: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 1], [2, 2], [3, 1], [4, 0], [4, 2]],
+  10: [
+    [0, 0], [0, 2],
+    [1, 0], [1, 2],
+    [2, 0], [2, 2],
+    [3, 0], [3, 2],
+    [4, 0], [4, 2],
+  ],
+};
+
+const createCorner = (card, isBottom) => {
+  const corner = document.createElement("div");
+  corner.className = `corner${isBottom ? " bottom" : ""}`;
+  const rank = document.createElement("span");
+  rank.textContent = card.label;
+  const suit = document.createElement("span");
+  suit.textContent = symbols[card.suit];
+  corner.appendChild(rank);
+  corner.appendChild(suit);
+  return corner;
+};
+
+const createFace = (card) => {
+  const face = document.createElement("div");
+  face.className = "face";
+  const letter = document.createElement("span");
+  letter.textContent = card.label;
+  const suit = document.createElement("span");
+  suit.className = "suit";
+  suit.textContent = symbols[card.suit];
+  face.appendChild(letter);
+  face.appendChild(suit);
+  return face;
+};
+
+const createPips = (card) => {
+  const pipGrid = document.createElement("div");
+  pipGrid.className = "pips";
+  const layout = pipLayouts[card.rank] || [];
+  const rows = 5;
+  const cols = 3;
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      const pip = document.createElement("span");
+      pip.className = "pip";
+      const hasPip = layout.some(([r, c]) => r === row && c === col);
+      pip.textContent = hasPip ? symbols[card.suit] : "";
+      pipGrid.appendChild(pip);
+    }
+  }
+  return pipGrid;
+};
+
+const createCardElement = (card) => {
+  const cardEl = document.createElement("div");
+  cardEl.className = "sol-card";
+  if (card.color === "red") {
+    cardEl.classList.add("red");
+  }
+  if (!card.faceUp) {
+    cardEl.classList.add("face-down");
+    return cardEl;
+  }
+  cardEl.appendChild(createCorner(card, false));
+  cardEl.appendChild(createCorner(card, true));
+  if (card.rank >= 11) {
+    cardEl.appendChild(createFace(card));
+  } else {
+    cardEl.appendChild(createPips(card));
+  }
+  return cardEl;
+};
 
 const clearSelected = () => {
   state.selected = null;
@@ -148,17 +228,7 @@ const checkWin = () => state.foundations.every((pile) => pile.length === 13);
 const renderPile = (pileEl, pile, options = {}) => {
   pileEl.innerHTML = "";
   pile.forEach((card, index) => {
-    const cardEl = document.createElement("div");
-    cardEl.className = "sol-card";
-    if (card.color === "red") {
-      cardEl.classList.add("red");
-    }
-    if (!card.faceUp) {
-      cardEl.classList.add("face-down");
-      cardEl.textContent = "";
-    } else {
-      cardEl.textContent = cardLabel(card);
-    }
+    const cardEl = createCardElement(card);
     cardEl.style.top = `${index * (options.offset ?? 0)}px`;
     cardEl.dataset.source = options.source || "";
     cardEl.dataset.pile = options.pileIndex?.toString() || "";
@@ -180,7 +250,6 @@ const renderStock = () => {
   if (state.stock.length) {
     const cardEl = document.createElement("div");
     cardEl.className = "sol-card face-down";
-    cardEl.textContent = "";
     stockEl.appendChild(cardEl);
   }
 };
