@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>New Releases • Neo Games</title>
+    <title>Arcade - Neo Games</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -26,18 +26,28 @@
 
       <div class="layout">
         <main class="main">
-          <section class="grid" id="new">
+          <section class="grid" id="arcade">
             <div class="section-title">
-              <h2>New Releases</h2>
+              <h2>Classic Arcade</h2>
               <a href="index.html#top-rated">Top Rated</a>
             </div>
-            <div class="cards" id="new-cards"></div>
+            <div class="cards">
+              <article class="card">
+                <div class="thumb one"></div>
+                <div class="card-meta">
+                  <h3>Pong</h3>
+                  <span class="badge">Classic</span>
+                </div>
+                <p>The original paddle showdown. First to 11 wins.</p>
+                <a class="card-link" href="arcade/pong.html">Play Pong</a>
+              </article>
+            </div>
           </section>
         </main>
       </div>
 
       <footer class="footer">
-        <p>Neo Games Lab • Built for fast browser play.</p>
+        <p>Neo Games Lab - Built for fast browser play.</p>
         <div class="links">
           <a href="index.html">About</a>
           <a href="new.html">Developers</a>
@@ -45,11 +55,5 @@
         </div>
       </footer>
     </div>
-    
-    <script src="data/supabase-config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="data/supabase.js"></script>
-    <script src="data/store.js"></script>
-    <script src="site.js"></script>
   </body>
 </html>
