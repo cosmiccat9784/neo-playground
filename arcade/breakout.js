@@ -8,9 +8,11 @@ const els = {
   overlaySubtitle: document.getElementById("overlay-subtitle"),
   stateEl: document.getElementById("state"),
   scoreEl: document.getElementById("score"),
+  levelEl: document.getElementById("level"),
   livesEl: document.getElementById("lives"),
   resetBtn: document.getElementById("reset-btn"),
   pauseBtn: document.getElementById("pause-btn"),
+  highScoreList: document.getElementById("highscore-list"),
 };
 
 const state = {
@@ -20,6 +22,7 @@ const state = {
   keys: new Set(),
   score: 0,
   lives: 3,
+  level: 1,
   paddle: { x: 340, y: 410, w: 140, h: 14, speed: 420 },
   ball: { x: 410, y: 360, r: 8, vx: 220, vy: -220 },
   bricks: [],
@@ -29,9 +32,11 @@ const state = {
 };
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const HIGHSCORE_KEY = "neo-arcade-breakout-highscores-v1";
 
 const updateHud = () => {
   els.scoreEl.textContent = state.score.toString();
+  els.levelEl.textContent = state.level.toString();
   els.livesEl.textContent = state.lives.toString();
 };
 
@@ -57,9 +62,55 @@ const resetBall = () => {
   state.ball.x = canvas.width / 2;
   state.ball.y = state.paddle.y - 20;
   const angle = (Math.random() * Math.PI) / 2 - Math.PI / 4;
-  const speed = 260;
+  const speed = 260 + (state.level - 1) * 18;
   state.ball.vx = Math.cos(angle) * speed;
   state.ball.vy = -Math.abs(Math.sin(angle) * speed);
+};
+
+const loadHighScores = () => {
+  try {
+    const raw = localStorage.getItem(HIGHSCORE_KEY);
+    if (!raw) {
+      return [];
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveHighScores = (scores) => {
+  localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(scores));
+};
+
+const recordHighScore = (score) => {
+  const scores = loadHighScores();
+  scores.push({ score, date: new Date().toISOString() });
+  scores.sort((a, b) => b.score - a.score);
+  const trimmed = scores.slice(0, 5);
+  saveHighScores(trimmed);
+  return trimmed;
+};
+
+const renderHighScores = (scores) => {
+  if (!els.highScoreList) {
+    return;
+  }
+  if (!scores.length) {
+    els.highScoreList.innerHTML = "<p class=\"modal-message\">No scores yet.</p>";
+    return;
+  }
+  els.highScoreList.innerHTML = scores
+    .map(
+      (entry, index) => `
+        <div class="leaderboard-row">
+          <strong>#${index + 1}</strong>
+          <span>${entry.score}</span>
+        </div>
+      `
+    )
+    .join("");
 };
 
 const buildBricks = () => {
@@ -81,9 +132,12 @@ const buildBricks = () => {
 const resetGame = () => {
   state.score = 0;
   state.lives = 3;
+  state.level = 1;
   state.running = false;
   state.paused = false;
   state.paddle.x = (canvas.width - state.paddle.w) / 2;
+  state.rows = 5;
+  state.cols = 8;
   buildBricks();
   resetBall();
   updateHud();
@@ -94,6 +148,19 @@ const resetGame = () => {
 };
 
 const allBricksCleared = () => state.bricks.every((brick) => !brick.alive);
+
+const prepareNextLevel = () => {
+  state.level += 1;
+  state.rows = Math.min(8, 4 + state.level);
+  state.paddle.w = clamp(140 - (state.level - 1) * 6, 100, 140);
+  state.paddle.x = clamp(state.paddle.x, 0, canvas.width - state.paddle.w);
+  buildBricks();
+  resetBall();
+  updateHud();
+  setStatus("Level Up");
+  setOverlay(`Level ${state.level}`, "Bricks reloaded. Get ready!", "Start Level");
+  showOverlay();
+};
 
 const handleInput = (dt) => {
   const left = state.keys.has("ArrowLeft");
@@ -173,6 +240,7 @@ const updateBall = (dt) => {
       setStatus("Game Over");
       setOverlay("Game over", "Out of lives. Try again?", "Play Again");
       showOverlay();
+      renderHighScores(recordHighScore(state.score));
     } else {
       resetBall();
       setStatus("Ready");
@@ -191,9 +259,7 @@ const update = (dt) => {
   updateBall(dt);
   if (allBricksCleared()) {
     state.running = false;
-    setStatus("Cleared");
-    setOverlay("You win!", "All bricks cleared.", "Play Again");
-    showOverlay();
+    prepareNextLevel();
   }
 };
 
@@ -292,4 +358,5 @@ window.addEventListener("keyup", (event) => {
 });
 
 resetGame();
+renderHighScores(loadHighScores());
 requestAnimationFrame(loop);
