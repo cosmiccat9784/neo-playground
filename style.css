@@ -608,6 +608,74 @@ canvas {
 .ms-cell.n7 { color: #f1f5ff; }
 .ms-cell.n8 { color: #c8c6d9; }
 
+.solitaire {
+  display: grid;
+  gap: 18px;
+}
+
+.solitaire-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.foundations {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.solitaire-tableau {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+  gap: 12px;
+}
+
+.pile {
+  position: relative;
+  width: 90px;
+  min-height: 120px;
+  border-radius: 12px;
+  border: 1px dashed rgba(77, 232, 255, 0.25);
+  background: rgba(10, 9, 16, 0.5);
+}
+
+.pile.tableau {
+  min-height: 220px;
+}
+
+.card {
+  position: absolute;
+  left: 0;
+  width: 90px;
+  height: 120px;
+  border-radius: 12px;
+  background: rgba(20, 18, 32, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #f7f4ff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.card.red {
+  color: #ff8bd4;
+}
+
+.card.face-down {
+  background: linear-gradient(135deg, #1a1730, #0b0a13);
+  border-color: rgba(77, 232, 255, 0.35);
+}
+
+.card.selected {
+  outline: 2px solid var(--neon-blue);
+  transform: translateY(-2px);
+}
+
 .grid {
   display: flex;
   flex-direction: column;
