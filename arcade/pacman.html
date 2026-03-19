@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Man - Neo Games Arcade</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="../arcade.html">
+          <img class="brand-logo" src="../assets/logo.png" alt="Neo Games logo" />
+          <div>
+            <p class="brand-name">Neo Games</p>
+            <p class="brand-sub">Arcade</p>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="../index.html">Discover</a>
+          <a href="../new.html">New</a>
+          <a href="../multiplayer.html">Multiplayer</a>
+          <a href="../arcade.html">Arcade</a>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <main class="main">
+          <section class="player">
+            <div class="player-header">
+              <div>
+                <h2>Pac-Man</h2>
+                <p>Classic / Single Player / Keyboard</p>
+              </div>
+            </div>
+
+            <div class="player-frame">
+              <canvas id="pacman" width="820" height="460"></canvas>
+              <div class="game-controls">
+                <button id="reset-btn" type="button">Reset</button>
+                <button id="pause-btn" type="button">Pause</button>
+              </div>
+              <div id="start-overlay" class="start-overlay">
+                <div class="overlay-card">
+                  <h3 id="overlay-title">Ready?</h3>
+                  <p id="overlay-subtitle">Arrow keys to move. Clear the maze.</p>
+                  <button id="start-btn" type="button">Start Game</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="player-status">
+              <span>Status</span>
+              <strong id="state">Ready</strong>
+              <span class="status-hint">Arrow keys to move.</span>
+              <span class="mono">Score</span>
+              <strong id="score">0</strong>
+              <span class="mono">Lives</span>
+              <strong id="lives">3</strong>
+              <span class="mono">Pellets</span>
+              <strong id="pellets">0</strong>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="footer">
+        <p>Neo Games Lab - Built for fast browser play.</p>
+        <div class="links">
+          <a href="../index.html">About</a>
+          <a href="../new.html">Developers</a>
+          <a href="../multiplayer.html">Support</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="pacman.js"></script>
+  </body>
+</html>
