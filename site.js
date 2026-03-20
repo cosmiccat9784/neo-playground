@@ -1,9 +1,24 @@
+const normalizeRelativeLink = (link) => {
+  if (!/^https?:\/\//i.test(link)) {
+    return link;
+  }
+  if (link.includes(".supabase.co")) {
+    return link;
+  }
+  try {
+    const parsed = new URL(link);
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch (error) {
+    return link;
+  }
+};
+
 const resolveLink = (game) => {
   if (game.link) {
     if (game.id && game.link.includes(".supabase.co/storage/")) {
       return `game.html?id=${game.id}`;
     }
-    return game.link;
+    return normalizeRelativeLink(game.link);
   }
   return game.id ? `game.html?id=${game.id}` : "#";
 };
