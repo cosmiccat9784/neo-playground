@@ -113,8 +113,8 @@ body {
 .account-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
+  gap: 12px;
+  padding: 8px 16px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -132,7 +132,7 @@ body {
 
 .account-meta {
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 
 .account-name {
@@ -140,12 +140,14 @@ body {
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.2;
 }
 
 .account-link {
   font-size: 12px;
   color: var(--neon-blue);
   text-decoration: none;
+  line-height: 1.2;
 }
 
 .actions {
