@@ -41,6 +41,8 @@ const state = {
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const HIGHSCORE_KEY = "neo-arcade-breakout-highscores-v1";
 const GAME_ID = "breakout";
+const getAccountName = () => window.NeoAuth?.getUser()?.username || "";
+const isSignedIn = () => Boolean(getAccountName());
 
 const getSupabaseConfig = () => window.NeoSupabaseConfig || {};
 const getSupabaseUrl = () => (getSupabaseConfig().url || "").replace(/\/$/, "");
@@ -205,6 +207,22 @@ const refreshGlobalLeaderboard = async () => {
   }
 };
 
+const syncAccountToLeaderboard = () => {
+  if (!els.leaderboardName || !els.leaderboardSubmit) {
+    return;
+  }
+  const username = getAccountName();
+  if (username) {
+    els.leaderboardName.value = username;
+    els.leaderboardName.readOnly = true;
+  } else {
+    els.leaderboardName.value = "";
+    els.leaderboardName.readOnly = false;
+    els.leaderboardName.placeholder = "Sign in to submit";
+  }
+  els.leaderboardSubmit.disabled = !username || !state.lastScore || !isLeaderboardEnabled();
+};
+
 const buildBricks = () => {
   const bricks = [];
   for (let row = 0; row < state.rows; row += 1) {
@@ -344,9 +362,7 @@ const updateBall = (dt) => {
       if (els.leaderboardScore) {
         els.leaderboardScore.value = state.lastScore.toString();
       }
-      if (els.leaderboardSubmit) {
-        els.leaderboardSubmit.disabled = !isLeaderboardEnabled();
-      }
+      syncAccountToLeaderboard();
     } else {
       resetBall();
       setStatus("Ready");
@@ -462,8 +478,12 @@ if (els.leaderboardForm) {
     if (!state.lastScore) {
       return;
     }
-    const rawName = els.leaderboardName?.value || "";
-    const username = rawName.trim().slice(0, 20) || "Anonymous";
+    const username = getAccountName();
+    if (!username) {
+      setLeaderboardMessage("Sign in to submit scores.");
+      syncAccountToLeaderboard();
+      return;
+    }
     const success = await submitGlobalScore(username, state.lastScore);
     if (success) {
       setLeaderboardMessage("Score submitted!");
@@ -496,4 +516,5 @@ if (isLeaderboardEnabled()) {
   setLeaderboardMessage("Global leaderboard offline.");
 }
 refreshGlobalLeaderboard();
+syncAccountToLeaderboard();
 requestAnimationFrame(loop);

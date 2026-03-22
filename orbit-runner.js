@@ -44,6 +44,9 @@ const state = {
   started: false,
 };
 
+const getAccountName = () => window.NeoAuth?.getUser()?.username || "";
+const isSignedIn = () => Boolean(getAccountName());
+
 const initElements = () => {
   const els = getEls();
   if (!els.canvas) {
@@ -203,6 +206,25 @@ const loadLeaderboard = async () => {
     state.leaderboardMessage.textContent = "Top pilots this week.";
   }
   renderLeaderboard(rows);
+};
+
+const syncAccountToLeaderboard = () => {
+  if (!state.leaderboardName || !state.leaderboardForm) {
+    return;
+  }
+  const username = getAccountName();
+  if (username) {
+    state.leaderboardName.value = username;
+    state.leaderboardName.readOnly = true;
+  } else {
+    state.leaderboardName.value = "";
+    state.leaderboardName.readOnly = false;
+    state.leaderboardName.placeholder = "Sign in to submit";
+  }
+  const submitBtn = state.leaderboardForm.querySelector("button");
+  if (submitBtn) {
+    submitBtn.disabled = !username;
+  }
 };
 
 const loadRatings = async () => {
@@ -465,6 +487,7 @@ const bindEvents = () => {
   if (state.leaderboardBtn) {
     state.leaderboardBtn.addEventListener("click", () => {
       openLeaderboard();
+      syncAccountToLeaderboard();
       loadLeaderboard();
     });
   }
@@ -478,14 +501,17 @@ const bindEvents = () => {
   if (state.leaderboardForm) {
     state.leaderboardForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const name = state.leaderboardName.value.trim();
+      const name = getAccountName();
       const score = Number(state.leaderboardScore.value);
       if (!name || !score) {
+        if (state.leaderboardMessage) {
+          state.leaderboardMessage.textContent = "Sign in to submit scores.";
+        }
         return;
       }
       if (window.NeoDB && window.NeoDB.enabled) {
         await window.NeoDB.submitScore("orbit-runner", name, score);
-        state.leaderboardName.value = "";
+        state.leaderboardName.value = name;
         state.pendingScore = null;
         await loadLeaderboard();
       }
@@ -499,6 +525,12 @@ const bindEvents = () => {
       if (!button) {
         return;
       }
+      if (!isSignedIn()) {
+        if (state.ratingCount) {
+          state.ratingCount.textContent = "Sign in to rate";
+        }
+        return;
+      }
       selectedRating = Number(button.dataset.rating);
       Array.from(state.ratingStars.children).forEach((star, index) => {
         star.classList.toggle("selected", index < selectedRating);
@@ -509,12 +541,18 @@ const bindEvents = () => {
 
     state.ratingForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (!isSignedIn()) {
+        if (state.ratingCount) {
+          state.ratingCount.textContent = "Sign in to rate";
+        }
+        return;
+      }
       const rating = Number(state.ratingForm.dataset.rating || 0);
       if (!rating) {
         return;
       }
       if (window.NeoDB && window.NeoDB.enabled) {
-        await window.NeoDB.submitRating("orbit-runner", "Anonymous", rating);
+        await window.NeoDB.submitRating("orbit-runner", getAccountName(), rating);
         state.ratingSubmit.disabled = true;
         await loadRatings();
       }
@@ -558,6 +596,7 @@ const boot = () => {
   requestAnimationFrame(frame);
   loadLeaderboard();
   loadRatings();
+  syncAccountToLeaderboard();
   if (window.NeoStore) {
     const progress = window.NeoStore.loadProgress("orbit-runner");
     applyProgress(progress);

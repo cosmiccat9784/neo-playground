@@ -10,13 +10,22 @@
   <body>
     <div class="app">
       <header class="topbar">
-        <a class="brand" href="../arcade.html">
-          <img class="brand-logo" src="../assets/logo.png" alt="Neo Games logo" />
-          <div>
-            <p class="brand-name">Neo Games</p>
-            <p class="brand-sub">Arcade</p>
+        <div class="topbar-row">
+          <a class="brand" href="../arcade.html">
+            <img class="brand-logo" src="../assets/logo.png" alt="Neo Games logo" />
+            <div>
+              <p class="brand-name">Neo Games</p>
+              <p class="brand-sub">Arcade</p>
+            </div>
+          </a>
+          <div class="account-bar">
+            <img class="account-avatar" src="../assets/logo.png" alt="Account avatar" />
+            <div class="account-meta">
+              <p class="account-name" data-neo-account-name>Not signed in</p>
+              <a class="account-link" data-neo-account-action data-neo-login-href="../login.html">Log in</a>
+            </div>
           </div>
-        </a>
+        </div>
         <nav class="nav">
           <a href="../index.html">Discover</a>
           <a href="../new.html">New</a>
@@ -75,6 +84,7 @@
       </div>
     </div>
 
+    <script src="../data/auth.js"></script>
     <script src="wordle-words.js"></script>
     <script src="wordle.js"></script>
   </body>

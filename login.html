@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multiplayer • Neo Games</title>
+    <title>Login - Neo Games</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -35,17 +35,22 @@
 
       <div class="layout">
         <main class="main">
-          <section class="empty-state">
-            <img class="empty-logo" src="assets/logo.png" alt="Neo Games logo" />
-            <h2>No games here.</h2>
-            <p>They’re on their way. Check back soon.</p>
-            <a class="pill" href="index.html">Return to Discover</a>
+          <section class="dev-panel">
+            <h2>Account Login</h2>
+            <p class="dev-sub">Sign in to submit leaderboard scores and ratings.</p>
+
+            <form id="login-form" class="dev-form">
+              <input id="login-username" type="text" placeholder="Username" required />
+              <input id="login-password" type="password" placeholder="Password" required />
+              <button type="submit">Sign in</button>
+            </form>
+            <p id="login-status" class="dev-status">Not signed in.</p>
           </section>
         </main>
       </div>
 
       <footer class="footer">
-        <p>Neo Games Lab • Built for fast browser play.</p>
+        <p>Neo Games Lab - Built for fast browser play.</p>
         <div class="links">
           <a href="index.html">About</a>
           <a href="new.html">Developers</a>
@@ -53,6 +58,8 @@
         </div>
       </footer>
     </div>
+
     <script src="data/auth.js"></script>
+    <script src="login.js"></script>
   </body>
 </html>
