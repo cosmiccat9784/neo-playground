@@ -12,7 +12,7 @@ const redirectHome = () => {
   window.location.href = "index.html";
 };
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const username = usernameInput.value.trim();
   const password = passwordInput.value.trim();
@@ -22,32 +22,36 @@ form.addEventListener("submit", (event) => {
   }
   if (window.NeoAuth) {
     const result = window.NeoAuth.signInWithPassword
-      ? window.NeoAuth.signInWithPassword(username, password)
+      ? await window.NeoAuth.signInWithPassword(username, password)
       : { ok: true, user: { username } };
     if (!result.ok) {
       setStatus(result.message || "Unable to sign in.");
       return;
     }
     window.NeoAuth.updateUI?.();
-    setStatus(`Signed in as ${result.user?.username || username}.`);
+    setStatus(`Signed in as ${result.username || result.user?.username || username}.`);
     setTimeout(redirectHome, 400);
   }
 });
 
-signupButton?.addEventListener("click", () => {
+signupButton?.addEventListener("click", async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value.trim();
   if (!window.NeoAuth?.signUp) {
     setStatus("Sign up is not available.");
     return;
   }
-  const result = window.NeoAuth.signUp(username, password);
+  const result = await window.NeoAuth.signUp(username, password);
   if (!result.ok) {
     setStatus(result.message || "Unable to create account.");
     return;
   }
   window.NeoAuth.updateUI?.();
-  setStatus(`Account created. Signed in as ${result.user?.username || username}.`);
+  if (result.needsConfirmation) {
+    setStatus("Account created. Confirm the email to sign in.");
+    return;
+  }
+  setStatus(`Account created. Signed in as ${result.username || result.user?.username || username}.`);
   setTimeout(redirectHome, 400);
 });
 

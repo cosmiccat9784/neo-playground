@@ -1,7 +1,21 @@
 const ACCOUNT_KEY = "neo-account-v1";
-const ACCOUNTS_KEY = "neo-accounts-v1";
+const EMAIL_DOMAIN = "neo.games";
 
-const normalizeUsername = (username) => username.trim().toLowerCase();
+const getSupabaseUrl = () => window.NeoSupabaseConfig?.url ?? "";
+
+const getProjectRef = () => {
+  try {
+    const url = new URL(getSupabaseUrl());
+    return url.hostname.split(".")[0];
+  } catch (error) {
+    return "";
+  }
+};
+
+const getAuthStoragePrefix = () => {
+  const ref = getProjectRef();
+  return ref ? `sb-${ref}-` : "";
+};
 
 const loadAccount = () => {
   try {
@@ -10,25 +24,6 @@ const loadAccount = () => {
   } catch (error) {
     return null;
   }
-};
-
-const loadAccounts = () => {
-  try {
-    const raw = localStorage.getItem(ACCOUNTS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    return [];
-  }
-};
-
-const saveAccounts = (accounts) => {
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-};
-
-const findAccount = (username) => {
-  const key = normalizeUsername(username);
-  return loadAccounts().find((account) => account.key === key);
 };
 
 const saveAccount = (username) => {
@@ -41,24 +36,124 @@ const clearAccount = () => {
   localStorage.removeItem(ACCOUNT_KEY);
 };
 
-const signInWithPassword = (username, password) => {
+const clearSupabaseSession = () => {
+  const prefix = getAuthStoragePrefix();
+  if (!prefix) {
+    return;
+  }
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith(prefix)) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
+const getCachedUsername = () => loadAccount()?.username ?? "";
+
+const usernameFromUser = (user) => {
+  const meta = user?.user_metadata || {};
+  if (meta.username) {
+    return meta.username;
+  }
+  if (meta.display_name) {
+    return meta.display_name;
+  }
+  const email = user?.email ?? "";
+  return email ? email.split("@")[0] : "";
+};
+
+const getSessionUser = () => {
+  const prefix = getAuthStoragePrefix();
+  if (!prefix) {
+    return null;
+  }
+  const authKey = `${prefix}auth-token`;
+  try {
+    const raw = localStorage.getItem(authKey);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (parsed?.user) {
+      return parsed.user;
+    }
+    return parsed?.currentSession?.user ?? null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const syncCachedAccount = () => {
+  if (!getAuthStoragePrefix()) {
+    return getCachedUsername();
+  }
+  const user = getSessionUser();
+  const username = user ? usernameFromUser(user) : "";
+  if (username) {
+    saveAccount(username);
+  } else {
+    clearAccount();
+  }
+  return username;
+};
+
+const getUser = () => {
+  const sessionUser = getSessionUser();
+  if (sessionUser) {
+    return { username: usernameFromUser(sessionUser), user: sessionUser };
+  }
+  const cached = getCachedUsername();
+  return cached ? { username: cached } : null;
+};
+
+const isSignedIn = () => Boolean(getUser()?.username);
+
+const getAuthClient = () => {
+  if (window.NeoSupabaseClient) {
+    return window.NeoSupabaseClient;
+  }
+  if (!window.supabase || !window.NeoSupabaseConfig?.url || !window.NeoSupabaseConfig?.anonKey) {
+    return null;
+  }
+  const client = window.supabase.createClient(
+    window.NeoSupabaseConfig.url,
+    window.NeoSupabaseConfig.anonKey
+  );
+  window.NeoSupabaseClient = client;
+  return client;
+};
+
+const buildEmail = (username) => {
+  if (username.includes("@")) {
+    return username;
+  }
+  const safe = username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  return `${safe}@${EMAIL_DOMAIN}`;
+};
+
+const signInWithPassword = async (username, password) => {
   const trimmedName = username.trim();
   const trimmedPass = password.trim();
   if (!trimmedName || !trimmedPass) {
     return { ok: false, message: "Please enter a username and password." };
   }
-  const account = findAccount(trimmedName);
-  if (!account) {
-    return { ok: false, message: "No account found. Create one first." };
+  const client = getAuthClient();
+  if (!client) {
+    return { ok: false, message: "Supabase auth is not configured yet." };
   }
-  if (account.password !== trimmedPass) {
-    return { ok: false, message: "Incorrect password." };
+  const { data, error } = await client.auth.signInWithPassword({
+    email: buildEmail(trimmedName),
+    password: trimmedPass,
+  });
+  if (error) {
+    return { ok: false, message: error.message };
   }
-  saveAccount(account.username);
-  return { ok: true, user: account };
+  const usernameValue = usernameFromUser(data.user) || trimmedName;
+  saveAccount(usernameValue);
+  return { ok: true, user: data.user, username: usernameValue };
 };
 
-const registerAccount = (username, password) => {
+const signUp = async (username, password) => {
   const trimmedName = username.trim();
   const trimmedPass = password.trim();
   if (!trimmedName || !trimmedPass) {
@@ -67,43 +162,60 @@ const registerAccount = (username, password) => {
   if (trimmedPass.length < 4) {
     return { ok: false, message: "Password must be at least 4 characters." };
   }
-  const accounts = loadAccounts();
-  const key = normalizeUsername(trimmedName);
-  if (accounts.some((account) => account.key === key)) {
-    return { ok: false, message: "That username is already taken." };
+  const client = getAuthClient();
+  if (!client) {
+    return { ok: false, message: "Supabase auth is not configured yet." };
   }
-  const account = {
-    username: trimmedName,
-    key,
+  const { data, error } = await client.auth.signUp({
+    email: buildEmail(trimmedName),
     password: trimmedPass,
-    createdAt: new Date().toISOString(),
+    options: {
+      data: {
+        username: trimmedName,
+      },
+    },
+  });
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+  const usernameValue = usernameFromUser(data.user) || trimmedName;
+  if (data.session) {
+    saveAccount(usernameValue);
+  }
+  return {
+    ok: true,
+    user: data.user,
+    username: usernameValue,
+    needsConfirmation: !data.session,
   };
-  accounts.push(account);
-  saveAccounts(accounts);
-  saveAccount(trimmedName);
-  return { ok: true, user: account };
 };
-
-const getUser = () => loadAccount();
-const isSignedIn = () => Boolean(loadAccount()?.username);
 
 const updateAccountUI = () => {
   const nameEl = document.querySelector("[data-neo-account-name]");
   const actionEl = document.querySelector("[data-neo-account-action]");
-  const user = loadAccount();
+  const cachedUsername = syncCachedAccount() || getCachedUsername();
 
   if (nameEl) {
-    nameEl.textContent = user?.username || "Not signed in";
+    nameEl.textContent = cachedUsername || "Not signed in";
   }
 
   if (actionEl) {
     const loginHref = actionEl.dataset.neoLoginHref || "login.html";
-    if (user?.username) {
+    if (cachedUsername) {
       actionEl.textContent = "Log out";
       actionEl.setAttribute("href", "#");
-      actionEl.onclick = (event) => {
+      actionEl.onclick = async (event) => {
         event.preventDefault();
+        const client = getAuthClient();
+        if (client) {
+          try {
+            await client.auth.signOut();
+          } catch (error) {
+            console.error(error);
+          }
+        }
         clearAccount();
+        clearSupabaseSession();
         updateAccountUI();
       };
     } else {
@@ -119,8 +231,11 @@ window.NeoAuth = {
   isSignedIn,
   signIn: (username) => saveAccount(username),
   signInWithPassword,
-  signUp: registerAccount,
-  signOut: clearAccount,
+  signUp,
+  signOut: () => {
+    clearAccount();
+    clearSupabaseSession();
+  },
   updateUI: updateAccountUI,
 };
 

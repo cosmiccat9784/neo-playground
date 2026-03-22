@@ -24,6 +24,9 @@ const getClient = () => {
     client = createClient();
   }
   window.NeoDB.enabled = Boolean(client);
+  if (client) {
+    window.NeoSupabaseClient = client;
+  }
   return client;
 };
 
