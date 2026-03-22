@@ -1,6 +1,7 @@
 const form = document.getElementById("login-form");
 const usernameInput = document.getElementById("login-username");
 const passwordInput = document.getElementById("login-password");
+const signupButton = document.getElementById("signup-button");
 const statusEl = document.getElementById("login-status");
 
 const setStatus = (text) => {
@@ -20,11 +21,34 @@ form.addEventListener("submit", (event) => {
     return;
   }
   if (window.NeoAuth) {
-    window.NeoAuth.signIn(username);
+    const result = window.NeoAuth.signInWithPassword
+      ? window.NeoAuth.signInWithPassword(username, password)
+      : { ok: true, user: { username } };
+    if (!result.ok) {
+      setStatus(result.message || "Unable to sign in.");
+      return;
+    }
     window.NeoAuth.updateUI?.();
-    setStatus(`Signed in as ${username}.`);
+    setStatus(`Signed in as ${result.user?.username || username}.`);
     setTimeout(redirectHome, 400);
   }
+});
+
+signupButton?.addEventListener("click", () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
+  if (!window.NeoAuth?.signUp) {
+    setStatus("Sign up is not available.");
+    return;
+  }
+  const result = window.NeoAuth.signUp(username, password);
+  if (!result.ok) {
+    setStatus(result.message || "Unable to create account.");
+    return;
+  }
+  window.NeoAuth.updateUI?.();
+  setStatus(`Account created. Signed in as ${result.user?.username || username}.`);
+  setTimeout(redirectHome, 400);
 });
 
 if (window.NeoAuth?.isSignedIn()) {

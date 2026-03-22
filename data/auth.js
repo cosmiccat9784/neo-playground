@@ -1,4 +1,7 @@
 const ACCOUNT_KEY = "neo-account-v1";
+const ACCOUNTS_KEY = "neo-accounts-v1";
+
+const normalizeUsername = (username) => username.trim().toLowerCase();
 
 const loadAccount = () => {
   try {
@@ -9,6 +12,25 @@ const loadAccount = () => {
   }
 };
 
+const loadAccounts = () => {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveAccounts = (accounts) => {
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+};
+
+const findAccount = (username) => {
+  const key = normalizeUsername(username);
+  return loadAccounts().find((account) => account.key === key);
+};
+
 const saveAccount = (username) => {
   const payload = { username, signedInAt: new Date().toISOString() };
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(payload));
@@ -17,6 +39,49 @@ const saveAccount = (username) => {
 
 const clearAccount = () => {
   localStorage.removeItem(ACCOUNT_KEY);
+};
+
+const signInWithPassword = (username, password) => {
+  const trimmedName = username.trim();
+  const trimmedPass = password.trim();
+  if (!trimmedName || !trimmedPass) {
+    return { ok: false, message: "Please enter a username and password." };
+  }
+  const account = findAccount(trimmedName);
+  if (!account) {
+    return { ok: false, message: "No account found. Create one first." };
+  }
+  if (account.password !== trimmedPass) {
+    return { ok: false, message: "Incorrect password." };
+  }
+  saveAccount(account.username);
+  return { ok: true, user: account };
+};
+
+const registerAccount = (username, password) => {
+  const trimmedName = username.trim();
+  const trimmedPass = password.trim();
+  if (!trimmedName || !trimmedPass) {
+    return { ok: false, message: "Please enter a username and password." };
+  }
+  if (trimmedPass.length < 4) {
+    return { ok: false, message: "Password must be at least 4 characters." };
+  }
+  const accounts = loadAccounts();
+  const key = normalizeUsername(trimmedName);
+  if (accounts.some((account) => account.key === key)) {
+    return { ok: false, message: "That username is already taken." };
+  }
+  const account = {
+    username: trimmedName,
+    key,
+    password: trimmedPass,
+    createdAt: new Date().toISOString(),
+  };
+  accounts.push(account);
+  saveAccounts(accounts);
+  saveAccount(trimmedName);
+  return { ok: true, user: account };
 };
 
 const getUser = () => loadAccount();
@@ -53,6 +118,8 @@ window.NeoAuth = {
   getUser,
   isSignedIn,
   signIn: (username) => saveAccount(username),
+  signInWithPassword,
+  signUp: registerAccount,
   signOut: clearAccount,
   updateUI: updateAccountUI,
 };
