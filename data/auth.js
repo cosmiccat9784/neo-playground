@@ -185,10 +185,21 @@ const signUp = async (username, email, password) => {
 const updateAccountUI = () => {
   const nameEl = document.querySelector("[data-neo-account-name]");
   const actionEl = document.querySelector("[data-neo-account-action]");
+  const avatarEls = document.querySelectorAll("[data-neo-account-avatar]");
   const cachedUsername = syncCachedAccount() || getCachedUsername();
+  const sessionUser = getSessionUser();
+  const avatarUrl = sessionUser?.user_metadata?.avatar_url || "";
 
   if (nameEl) {
     nameEl.textContent = cachedUsername || "Not signed in";
+  }
+
+  if (avatarEls.length) {
+    avatarEls.forEach((el) => {
+      if (avatarUrl) {
+        el.setAttribute("src", avatarUrl);
+      }
+    });
   }
 
   if (actionEl) {
