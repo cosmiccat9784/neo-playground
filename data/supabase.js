@@ -120,6 +120,42 @@ const submitRating = async (gameId, username, rating) => {
   return true;
 };
 
+const fetchUserScores = async (username) => {
+  const activeClient = getClient();
+  if (!activeClient) {
+    return [];
+  }
+  const { data, error } = await activeClient
+    .from("scores")
+    .select("game_id, score, created_at")
+    .eq("username", username)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data ?? [];
+};
+
+const fetchUserRatings = async (username) => {
+  const activeClient = getClient();
+  if (!activeClient) {
+    return [];
+  }
+  const { data, error } = await activeClient
+    .from("ratings")
+    .select("game_id, rating, created_at")
+    .eq("username", username)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data ?? [];
+};
+
 const mapGameRow = (row) => ({
   id: row.id,
   title: row.title,
@@ -238,6 +274,8 @@ window.NeoDB = {
   submitScore,
   fetchRatings,
   submitRating,
+  fetchUserScores,
+  fetchUserRatings,
   fetchGames,
   fetchGame,
   insertGame,

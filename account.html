@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neo Games</title>
+    <title>Account - Neo Games</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -36,38 +36,61 @@
 
       <div class="layout">
         <main class="main">
-          <section class="hero" id="featured">
+          <section class="account-hero">
             <div>
-              <p class="kicker">Featured Launch</p>
-              <h1 id="featured-title">Orbit Runner</h1>
-              <p class="lede">
-                Neon asteroids. Tight controls. Survive as long as you can and
-                climb the leaderboard.
+              <p class="kicker">Account</p>
+              <h1 id="account-title">Your Stats</h1>
+              <p class="lede" id="account-subtitle">
+                Sign in to see your scores and ratings.
               </p>
-              <div class="hero-cta">
-                <a class="pill" id="featured-link" href="orbit-runner.html">Play Orbit Runner</a>
-                <a class="pill ghost" href="#top-rated">Top Rated Games</a>
-              </div>
             </div>
             <div class="hero-card">
-              <p>Launch Status</p>
-              <strong id="launch-status">Live</strong>
-              <span id="launch-note">Now featuring Orbit Runner</span>
+              <p>Profile</p>
+              <strong id="account-name">Not signed in</strong>
+              <span id="account-status">Log in to unlock leaderboards.</span>
             </div>
           </section>
 
-          <section class="grid" id="top-rated">
-            <div class="section-title">
-              <h2>Top Rated</h2>
-              <a href="#featured">Featured launch</a>
-            </div>
-            <div class="cards" id="top-rated-cards"></div>
+          <section class="stats-grid">
+            <article class="stat-card">
+              <span>Total Scores</span>
+              <strong id="stat-scores">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Best Score</span>
+              <strong id="stat-best">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Ratings Given</span>
+              <strong id="stat-ratings">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Last Activity</span>
+              <strong id="stat-last">-</strong>
+            </article>
+          </section>
+
+          <section class="account-grid">
+            <article class="account-panel">
+              <div class="panel-header">
+                <h2>Best Scores</h2>
+                <span>Your top runs</span>
+              </div>
+              <div id="account-best" class="account-list"></div>
+            </article>
+            <article class="account-panel">
+              <div class="panel-header">
+                <h2>Recent Ratings</h2>
+                <span>Your latest votes</span>
+              </div>
+              <div id="account-ratings" class="account-list"></div>
+            </article>
           </section>
         </main>
       </div>
 
       <footer class="footer">
-        <p>Neo Games Lab • Built for fast browser play.</p>
+        <p>Neo Games Lab - Built for fast browser play.</p>
         <div class="links">
           <a href="index.html">About</a>
           <a href="new.html">Developers</a>
@@ -75,13 +98,11 @@
         </div>
       </footer>
     </div>
-    
-    <script src="data/auth.js"></script>
+
     <script src="data/supabase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="data/supabase.js"></script>
-    <script src="data/store.js"></script>
-    <script src="site.js"></script>
+    <script src="data/auth.js"></script>
+    <script src="account.js"></script>
   </body>
 </html>
-
