@@ -194,22 +194,10 @@ const updateAccountUI = () => {
   if (actionEl) {
     const loginHref = actionEl.dataset.neoLoginHref || "login.html";
     if (cachedUsername) {
-      actionEl.textContent = "Log out";
-      actionEl.setAttribute("href", "#");
-      actionEl.onclick = async (event) => {
-        event.preventDefault();
-        const client = getAuthClient();
-        if (client) {
-          try {
-            await client.auth.signOut();
-          } catch (error) {
-            console.error(error);
-          }
-        }
-        clearAccount();
-        clearSupabaseSession();
-        updateAccountUI();
-      };
+      const accountHref = loginHref.replace(/login\.html.*$/i, "account.html");
+      actionEl.textContent = "Account";
+      actionEl.setAttribute("href", accountHref);
+      actionEl.onclick = null;
     } else {
       actionEl.textContent = "Log in";
       actionEl.setAttribute("href", loginHref);

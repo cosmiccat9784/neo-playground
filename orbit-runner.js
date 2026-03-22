@@ -216,9 +216,11 @@ const syncAccountToLeaderboard = () => {
   if (username) {
     state.leaderboardName.value = username;
     state.leaderboardName.readOnly = true;
+    state.leaderboardName.disabled = false;
   } else {
     state.leaderboardName.value = "";
-    state.leaderboardName.readOnly = false;
+    state.leaderboardName.readOnly = true;
+    state.leaderboardName.disabled = true;
     state.leaderboardName.placeholder = "Sign in to submit";
   }
   const submitBtn = state.leaderboardForm.querySelector("button");

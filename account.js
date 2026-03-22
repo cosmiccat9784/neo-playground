@@ -2,6 +2,7 @@ const accountTitle = document.getElementById("account-title");
 const accountSubtitle = document.getElementById("account-subtitle");
 const accountName = document.getElementById("account-name");
 const accountStatus = document.getElementById("account-status");
+const logoutButton = document.getElementById("account-logout");
 const statScores = document.getElementById("stat-scores");
 const statBest = document.getElementById("stat-best");
 const statRatings = document.getElementById("stat-ratings");
@@ -117,6 +118,14 @@ const boot = async () => {
   const username = window.NeoAuth?.getUser?.()?.username || "";
   if (accountName) {
     accountName.textContent = username || "Not signed in";
+  }
+  if (logoutButton) {
+    logoutButton.style.display = username ? "inline-flex" : "none";
+    logoutButton.onclick = () => {
+      window.NeoAuth?.signOut?.();
+      window.NeoAuth?.updateUI?.();
+      window.location.href = "index.html";
+    };
   }
   if (!username) {
     if (accountSubtitle) {

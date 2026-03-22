@@ -215,9 +215,11 @@ const syncAccountToLeaderboard = () => {
   if (username) {
     els.leaderboardName.value = username;
     els.leaderboardName.readOnly = true;
+    els.leaderboardName.disabled = false;
   } else {
     els.leaderboardName.value = "";
-    els.leaderboardName.readOnly = false;
+    els.leaderboardName.readOnly = true;
+    els.leaderboardName.disabled = true;
     els.leaderboardName.placeholder = "Sign in to submit";
   }
   els.leaderboardSubmit.disabled = !username || !state.lastScore || !isLeaderboardEnabled();
