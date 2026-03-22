@@ -27,6 +27,15 @@ const getClient = () => {
   return client;
 };
 
+const resolveUsername = (username) => {
+  const trimmed = (username ?? "").toString().trim();
+  if (trimmed) {
+    return trimmed;
+  }
+  const account = window.NeoAuth?.getUser?.();
+  return account?.username?.trim() ?? "";
+};
+
 const fetchLeaderboard = async (gameId) => {
   const activeClient = getClient();
   if (!activeClient) {
@@ -51,9 +60,13 @@ const submitScore = async (gameId, username, score) => {
   if (!activeClient) {
     return false;
   }
+  const resolvedName = resolveUsername(username);
+  if (!resolvedName) {
+    return false;
+  }
   const { error } = await activeClient.from("scores").insert({
     game_id: gameId,
-    username,
+    username: resolvedName,
     score,
   });
   if (error) {
@@ -88,9 +101,13 @@ const submitRating = async (gameId, username, rating) => {
   if (!activeClient) {
     return false;
   }
+  const resolvedName = resolveUsername(username);
+  if (!resolvedName) {
+    return false;
+  }
   const { error } = await activeClient.from("ratings").insert({
     game_id: gameId,
-    username,
+    username: resolvedName,
     rating,
   });
   if (error) {
