@@ -1092,6 +1092,14 @@ canvas {
   padding: 10px 12px;
 }
 
+.signup-only {
+  display: none;
+}
+
+.signup-only.is-visible {
+  display: block;
+}
+
 .dev-file {
   display: grid;
   gap: 6px;

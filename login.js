@@ -9,6 +9,24 @@ const setStatus = (text) => {
   statusEl.textContent = text;
 };
 
+const showUsernameField = () => {
+  if (!usernameInput) {
+    return false;
+  }
+  if (!usernameInput.classList.contains("is-visible")) {
+    usernameInput.classList.add("is-visible");
+    return true;
+  }
+  return false;
+};
+
+const hideUsernameField = () => {
+  if (!usernameInput) {
+    return;
+  }
+  usernameInput.classList.remove("is-visible");
+};
+
 const redirectHome = () => {
   window.location.href = "index.html";
 };
@@ -24,6 +42,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
   if (window.NeoAuth) {
+    hideUsernameField();
     const result = window.NeoAuth.signInWithPassword
       ? await window.NeoAuth.signInWithPassword(email, password)
       : { ok: true, user: { username } };
@@ -39,6 +58,12 @@ form.addEventListener("submit", async (event) => {
 });
 
 signupButton?.addEventListener("click", async () => {
+  const revealed = showUsernameField();
+  if (revealed) {
+    setStatus("Choose a username to finish creating your account.");
+    usernameInput.focus();
+    return;
+  }
   const username = usernameInput.value.trim();
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
