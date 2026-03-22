@@ -1,5 +1,4 @@
 const ACCOUNT_KEY = "neo-account-v1";
-const EMAIL_DOMAIN = "neo.games";
 
 const getSupabaseUrl = () => window.NeoSupabaseConfig?.url ?? "";
 
@@ -123,41 +122,34 @@ const getAuthClient = () => {
   return client;
 };
 
-const buildEmail = (username) => {
-  if (username.includes("@")) {
-    return username;
-  }
-  const safe = username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
-  return `${safe}@${EMAIL_DOMAIN}`;
-};
-
-const signInWithPassword = async (username, password) => {
-  const trimmedName = username.trim();
+const signInWithPassword = async (email, password) => {
+  const trimmedEmail = email.trim();
   const trimmedPass = password.trim();
-  if (!trimmedName || !trimmedPass) {
-    return { ok: false, message: "Please enter a username and password." };
+  if (!trimmedEmail || !trimmedPass) {
+    return { ok: false, message: "Please enter your email and password." };
   }
   const client = getAuthClient();
   if (!client) {
     return { ok: false, message: "Supabase auth is not configured yet." };
   }
   const { data, error } = await client.auth.signInWithPassword({
-    email: buildEmail(trimmedName),
+    email: trimmedEmail,
     password: trimmedPass,
   });
   if (error) {
     return { ok: false, message: error.message };
   }
-  const usernameValue = usernameFromUser(data.user) || trimmedName;
+  const usernameValue = usernameFromUser(data.user) || trimmedEmail.split("@")[0];
   saveAccount(usernameValue);
   return { ok: true, user: data.user, username: usernameValue };
 };
 
-const signUp = async (username, password) => {
+const signUp = async (username, email, password) => {
   const trimmedName = username.trim();
+  const trimmedEmail = email.trim();
   const trimmedPass = password.trim();
-  if (!trimmedName || !trimmedPass) {
-    return { ok: false, message: "Please enter a username and password." };
+  if (!trimmedName || !trimmedEmail || !trimmedPass) {
+    return { ok: false, message: "Please enter a username, email, and password." };
   }
   if (trimmedPass.length < 4) {
     return { ok: false, message: "Password must be at least 4 characters." };
@@ -167,7 +159,7 @@ const signUp = async (username, password) => {
     return { ok: false, message: "Supabase auth is not configured yet." };
   }
   const { data, error } = await client.auth.signUp({
-    email: buildEmail(trimmedName),
+    email: trimmedEmail,
     password: trimmedPass,
     options: {
       data: {

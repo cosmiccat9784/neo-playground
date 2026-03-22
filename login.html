@@ -40,14 +40,15 @@
             <p class="dev-sub">Sign in to submit leaderboard scores and ratings.</p>
 
             <form id="login-form" class="dev-form">
-              <input id="login-username" type="text" placeholder="Username" autocomplete="username" required />
+              <input id="login-username" type="text" placeholder="Username" autocomplete="username" />
+              <input id="login-email" type="email" placeholder="Email" autocomplete="email" required />
               <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required />
               <div class="dev-form-actions">
                 <button type="submit">Sign in</button>
                 <button type="button" id="signup-button" class="secondary">Create account</button>
               </div>
             </form>
-            <p class="dev-hint">New here? Use “Create account” with a username + password.</p>
+            <p class="dev-hint">New here? Use “Create account” with a username, real email, and password.</p>
             <p id="login-status" class="dev-status">Not signed in.</p>
           </section>
         </main>
