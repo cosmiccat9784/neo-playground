@@ -61,12 +61,35 @@ const clearProgress = (gameId) => {
   saveStore(store);
 };
 
-const loadSiteData = async () => {
-  const response = await fetch(SITE_DATA_URL);
-  if (!response.ok) {
-    throw new Error("Unable to load site data");
+const readEmbeddedSiteData = () => {
+  if (window.NeoSiteData) {
+    return window.NeoSiteData;
   }
-  return response.json();
+  const script = document.getElementById("neo-site-data");
+  if (!script) {
+    return null;
+  }
+  try {
+    return JSON.parse(script.textContent);
+  } catch (error) {
+    return null;
+  }
+};
+
+const loadSiteData = async () => {
+  try {
+    const response = await fetch(SITE_DATA_URL, { cache: "no-store" });
+    if (response.ok) {
+      return response.json();
+    }
+  } catch (error) {
+    console.warn("Unable to fetch site data, falling back to embedded data.");
+  }
+  const embedded = readEmbeddedSiteData();
+  if (embedded) {
+    return embedded;
+  }
+  throw new Error("Unable to load site data");
 };
 
 window.NeoStore = {

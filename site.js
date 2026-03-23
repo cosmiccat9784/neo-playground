@@ -148,13 +148,24 @@ const renderNew = (games) => {
 
 const loadGames = async () => {
   if (window.NeoDB && window.NeoDB.enabled) {
-    const games = await window.NeoDB.fetchGames();
-    if (games.length) {
-      return games;
+    try {
+      const games = await window.NeoDB.fetchGames();
+      if (games.length) {
+        return games;
+      }
+    } catch (error) {
+      console.warn("Supabase game fetch failed, falling back to local data.");
     }
   }
-  const data = await window.NeoStore.loadSiteData();
-  return data.games ?? [];
+  if (window.NeoStore?.loadSiteData) {
+    try {
+      const data = await window.NeoStore.loadSiteData();
+      return data.games ?? [];
+    } catch (error) {
+      console.warn("Local site data fetch failed, falling back to embedded data.");
+    }
+  }
+  return window.NeoSiteData?.games ?? [];
 };
 
 const boot = async () => {
