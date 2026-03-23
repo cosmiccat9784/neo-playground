@@ -23,7 +23,33 @@ const resolveLink = (game) => {
   return game.id ? `game.html?id=${game.id}` : "#";
 };
 
+const getThumbnailFromLink = (link) => {
+  if (!link || !link.includes("/storage/")) {
+    return "";
+  }
+  try {
+    const url = new URL(link, window.location.href);
+    const parts = url.pathname.split("/");
+    if (!parts.length) {
+      return "";
+    }
+    parts[parts.length - 1] = "thumbnail.png";
+    url.pathname = parts.join("/");
+    url.search = "";
+    return url.toString();
+  } catch (error) {
+    return "";
+  }
+};
+
 const getThumbnailUrl = (game) => {
+  if (game?.thumbnail) {
+    return game.thumbnail;
+  }
+  const fromLink = getThumbnailFromLink(game?.link || "");
+  if (fromLink) {
+    return fromLink;
+  }
   const baseUrl = window.NeoSupabaseConfig?.url || "";
   if (!baseUrl || baseUrl.startsWith("YOUR_") || !game?.id) {
     return "";
