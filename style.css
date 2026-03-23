@@ -954,22 +954,26 @@ canvas {
 .thumb {
   border-radius: 14px;
   height: 120px;
+  background-image: var(--thumb-gradient);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .thumb.one {
-  background: linear-gradient(135deg, #3b7cff, #6df3ff);
+  --thumb-gradient: linear-gradient(135deg, #3b7cff, #6df3ff);
 }
 
 .thumb.two {
-  background: linear-gradient(135deg, #ff5ee3, #ffd36a);
+  --thumb-gradient: linear-gradient(135deg, #ff5ee3, #ffd36a);
 }
 
 .thumb.three {
-  background: linear-gradient(135deg, #49d1ff, #91f0c7);
+  --thumb-gradient: linear-gradient(135deg, #49d1ff, #91f0c7);
 }
 
 .thumb.four {
-  background: linear-gradient(135deg, #b35cff, #f36bff);
+  --thumb-gradient: linear-gradient(135deg, #b35cff, #f36bff);
 }
 
 .rail-card {

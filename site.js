@@ -23,14 +23,27 @@ const resolveLink = (game) => {
   return game.id ? `game.html?id=${game.id}` : "#";
 };
 
+const getThumbnailUrl = (game) => {
+  const baseUrl = window.NeoSupabaseConfig?.url || "";
+  if (!baseUrl || baseUrl.startsWith("YOUR_") || !game?.id) {
+    return "";
+  }
+  const safeId = encodeURIComponent(game.id);
+  return `${baseUrl.replace(/\\/$/, "")}/storage/v1/object/public/games/${safeId}/thumbnail.png`;
+};
+
 const buildCard = (game, options = {}) => {
   const ratingValue = Number(game.rating);
   const ratingBadge = Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : "Unrated";
   const badgeText = options.badge ?? (game.new ? "New" : ratingBadge);
+  const thumbUrl = getThumbnailUrl(game);
+  const thumbStyle = thumbUrl
+    ? ` style="background-image: url('${thumbUrl}'), var(--thumb-gradient)"`
+    : "";
 
   return `
     <article class="card">
-      <div class="thumb one"></div>
+      <div class="thumb one"${thumbStyle}></div>
       <div class="card-meta">
         <h3>${game.title}</h3>
         <span class="badge">${badgeText}</span>
