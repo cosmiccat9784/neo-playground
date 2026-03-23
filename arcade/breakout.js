@@ -444,10 +444,25 @@ const startGame = () => {
   els.pauseBtn.textContent = "Pause";
 };
 
-els.startBtn.addEventListener("click", startGame);
-els.startOverlay.addEventListener("click", (event) => {
-  if (event.target === els.startOverlay) {
+const tryStart = () => {
+  if (!state.running) {
     startGame();
+  }
+};
+
+if (els.startBtn) {
+  els.startBtn.addEventListener("click", tryStart);
+}
+if (els.startOverlay) {
+  els.startOverlay.addEventListener("click", (event) => {
+    if (event.target === els.startOverlay) {
+      tryStart();
+    }
+  });
+}
+canvas.addEventListener("click", () => {
+  if (!state.running) {
+    tryStart();
   }
 });
 
@@ -500,6 +515,11 @@ if (els.leaderboardForm) {
 }
 
 window.addEventListener("keydown", (event) => {
+  if (event.key === " " || event.key === "Enter") {
+    event.preventDefault();
+    tryStart();
+    return;
+  }
   if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
     event.preventDefault();
   }
